@@ -1,0 +1,41 @@
+{
+  "name": "apps-script-starter",
+  "version": "14.0.0",
+  "type": "module",
+  "description": "Setup a local development environment for Google Apps Script with Visual Studio Code",
+  "author": "Amit Agarwal <amit@labnol.org> (https://www.labnol.org)",
+  "homepage": "https://digitalinspiration.com/",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite build --config vite.config.js --mode development --watch",
+    "build": "vite build --config vite.config.js",
+    "postbuild": "npx prettier --write dist/**/*.js",
+    "upload": "npx clasp push",
+    "deploy": "npm run build && npm run upload"
+  },
+  "keywords": [
+    "google-apps-script",
+    "google-workspace"
+  ],
+  "dependencies": {
+    "apps-script-oauth2": "github:googleworkspace/apps-script-oauth2",
+    "query-string": "^9.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.24.0",
+    "@google/clasp": "^3.0.3-alpha",
+    "@types/google-apps-script": "^1.0.97",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-googleappsscript": "^1.0.5",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "globals": "^16.0.0",
+    "prettier": "^3.5.3",
+    "vite": "^6.2.6",
+    "vite-plugin-static-copy": "^2.3.1"
+  },
+  "bugs": {
+    "url": "https://github.com/labnol/apps-script-starter/issues"
+  }
+}
