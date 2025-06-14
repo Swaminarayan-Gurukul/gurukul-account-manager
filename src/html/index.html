@@ -1,30 +1,222 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-    <title>Google Apps Script</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+  <base target="_top">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+      background: #f9f9f9;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: white;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    input,
+    select,
+    button {
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: left;
+    }
+
+    th {
+      background: #eee;
+    }
+  </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="section">
-            <h4>Google Apps Script</h4>
-            <p> Create Google add-ons and web applications with Google Apps Script and modern JavaScript with the
-                starter kit. </p>
-            <p> The starter kit is used by <a href="https://digitalinspiration.com/">Digital Inspiration</a> for
-                building popular Google Workspace add-on including <a href="https://workspace.google.com/marketplace/app/mail_merge_with_attachments/223404411203">Gmail
-                    Mail Merge</a> and <a href="https://workspace.google.com/marketplace/app/document_studio/429444628321">Document
-                    Studio</a>. </p>
-            <p> The modern development environment for building Google add-ons and web applications with Google Apps
-                Script and next-generation JavaScript. Uses Vite, Google Clasp and Eslint for an efficient
-                workflow. For help, please contact <a href="https://twitter.com/labnol">Amit Agarwal</a>
-                <small>amit@labnol.org</small>
-            </p>
-        </div>
+
+  <div class="grid">
+    <!-- Voucher Card -->
+    <div class="card">
+      <h2>Income / Expense Voucher</h2>
+      <form id="voucherForm">
+        <label>Date: <input type="date" id="dateField" name="date" required></label>
+        <label>Type:
+          <select name="type" required>
+            <option value="Income">Income</option>
+            <option value="Expense">Expense</option>
+          </select>
+        </label>
+        <label>Amount: <input type="number" name="amount" required></label>
+        <label>Description: <input type="text" name="description" required></label>
+        <label>Ledger:
+          <select name="ledger" required>
+            <option value="">-- Select Ledger --</option>
+            <option value="Education">Education</option>
+            <option value="Hostel">Hostel</option>
+            <option value="Health/medical">Health/medical</option>
+            <option value="Kitchen">Kitchen</option>
+            <option value="Transportation">Transportation</option>
+            <option value="Store Stationary">Store Stationary</option>
+            <option value="Shreeji Store">Shreeji Store</option>
+            <option value="Office">Office</option>
+            <option value="Satsang Mandal">Satsang Mandal</option>
+            <option value="Shreeji Prasadam">Shreeji Prasadam</option>
+            <option value="Other">Other</option>
+          </select>
+        </label>
+        <label>Department: <input type="text" name="department" required></label>
+        <button id="add-voucher" type="submit">Add Voucher</button>
+      </form>
     </div>
+
+    <!-- Add more cards here for Food Pass, Donation, etc. -->
+    <!-- Example Placeholder Card -->
+
+    <div class="card">
+      <h2>Food Pass</h2>
+      Content coming soon...
+    </div>
+    <!-- Voucher List Card -->
+    <div class="card" style="grid-column: span 2;">
+      <h2>Voucher List</h2>
+      <table id="voucherTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Description</th>
+            <th>Ledger</th>
+            <th>Department</th>
+            <th>Print</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    const form = document.getElementById('voucherForm');
+    const formButton = document.querySelector('form #add-voucher')
+    const tableBody = document.querySelector('#voucherTable tbody');
+    // Set today's date by default
+    document.getElementById('dateField').valueAsDate = new Date();
+
+
+    function loadVouchers() {
+      google.script.run.withSuccessHandler(function (data) {
+        tableBody.innerHTML = '';
+        data = JSON.parse(data);
+
+        console.log(data);
+        if (!data || !Array.isArray(data)) return;
+        data.forEach(v => {
+          const row = `<tr>
+            <td>${v.ID}</td>
+            <td>${v.Date}</td>
+            <td>${v.Type}</td>
+            <td>${v.Amount}</td>
+            <td>${v.Description}</td>
+            <td>${v.Ledger}</td>
+            <td>${v.Department}</td>
+            <td><button onclick='printVoucher(${JSON.stringify(JSON.stringify(v))})'>🖨️</button></td>
+          </tr>`;
+          tableBody.innerHTML += row;
+        });
+
+      }).getVouchers();
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      formButton.setAttribute('disabled', 'disabled');
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      google.script.run.withSuccessHandler(function (response) {
+        if (response.success) {
+          form.reset();
+          loadVouchers();
+        }
+        formButton.removeAttribute('disabled');
+      }).addVoucher(data);
+    });
+
+    loadVouchers();
+  </script>
+
+  <script>
+  function printVoucher(voucherJson) {
+    const voucher = JSON.parse(voucherJson);
+
+    const printable = `
+      <html>
+        <head>
+          <style>
+            body { font-family: sans-serif; padding: 20px; }
+            h2 { text-align: center; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            td { padding: 8px; }
+          </style>
+        </head>
+        <body>
+          <h2>Shree Swaminarayan Gurukul - Voucher</h2>
+          <table>
+            <tr><td><strong>ID</strong></td><td>${voucher.ID}</td></tr>
+            <tr><td><strong>Date</strong></td><td>${voucher.Date}</td></tr>
+            <tr><td><strong>Type</strong></td><td>${voucher.Type}</td></tr>
+            <tr><td><strong>Amount</strong></td><td>${voucher.Amount}</td></tr>
+            <tr><td><strong>Description</strong></td><td>${voucher.Description}</td></tr>
+            <tr><td><strong>Ledger</strong></td><td>${voucher.Ledger}</td></tr>
+            <tr><td><strong>Department</strong></td><td>${voucher.Department}</td></tr>
+          </table>
+          <p style="text-align:center; margin-top:40px;">Thank you 🙏</p>
+          <script>window.print()<\/script>
+        </body>
+      </html>`;
+
+    
+    const win = window.open('', '', `width=${window.screen.width},height=${window.screen.height}`);
+    win.document.write(printable);
+    win.document.close();
+  }
+</script>
+
+
+
 </body>
 
 </html>
