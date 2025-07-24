@@ -94,6 +94,7 @@
             <option value="Other">Other</option>
           </select>
         </label>
+        <label>Name: <input type="text" name="personname" required></label>
         <label>Department: <input type="text" name="department" required></label>
         <button id="add-voucher" type="submit">Add Voucher</button>
       </form>
@@ -102,10 +103,163 @@
     <!-- Add more cards here for Food Pass, Donation, etc. -->
     <!-- Example Placeholder Card -->
 
+    <!-- Food Pass Card -->
     <div class="card">
       <h2>Food Pass</h2>
-      Content coming soon...
+      <form id="foodPassForm">
+        <label>Quantity:
+          <input type="number" name="quantity" id="quantityInput" required min="1" value="1">
+        </label>
+
+        <label>Total Amount to Pay:
+          <input type="text" id="totalAmount" readonly>
+        </label>
+
+        <button type="submit" id="print-food-pass">Print Food Pass</button>
+      </form>
     </div>
+
+    <!-- Donation Card -->
+<div class="card">
+  <h2>Donation Receipt</h2>
+  <form id="donationForm">
+    <div>
+      <label>Date:
+        <input type="text" id="donationDate" readonly>
+      </label>
+    </div>
+
+    <div>
+      <label>Donor Name:
+        <input type="text" id="donorName" required>
+      </label>
+    </div>
+
+    <div>
+      <label>Note:
+        <input type="text" id="donationNote">
+      </label>
+    </div>
+
+    <div>
+      <label>Amount:</label><br>
+      <button type="button" class="presetAmount" data-amt="100">₹100</button>
+      <button type="button" class="presetAmount" data-amt="200">₹200</button>
+      <button type="button" class="presetAmount" data-amt="250">₹250</button>
+      <button type="button" class="presetAmount" data-amt="500">₹500</button>
+      <button type="button" class="presetAmount" data-amt="1000">₹1000</button>
+    </div>
+
+    <div>
+      <label>Custom Amount:
+        <input type="number" id="customAmount" min="0">
+      </label>
+    </div>
+
+    <div>
+      <label>Total:
+        <input type="text" id="totalDonation" readonly value="₹0">
+      </label>
+    </div>
+
+    <button type="submit" id="donationSubmit">Print & Save</button>
+    <button id="resetDonationForm">Reset Form</button>
+    
+  </form>
+</div>
+
+<script>
+  const presetButtons = document.querySelectorAll('.presetAmount');
+  const customAmountInput = document.getElementById('customAmount');
+  const totalInput = document.getElementById('totalDonation');
+  const donationForm = document.getElementById('donationForm');
+  const resetDonationForm = document.getElementById('resetDonationForm');
+
+  resetDonationForm.addEventListener('click', function(){
+    donationForm.reset();
+    document.getElementById('donationDate').value = new Date().toLocaleDateString('en-GB');
+    totalDonation = 0;
+  });
+
+  let totalDonation = 0;
+
+  const updateTotal = () => {
+    const customAmt = parseInt(customAmountInput.value) || 0;
+    totalInput.value = '₹' + (totalDonation + customAmt);
+  };
+
+  presetButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      totalDonation += parseInt(button.dataset.amt);
+      updateTotal();
+    });
+  });
+
+  customAmountInput.addEventListener('input', updateTotal);
+
+  document.getElementById('donationDate').value = new Date().toLocaleDateString('en-GB');
+
+  donationForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const name = document.getElementById('donorName').value.trim();
+    const note = document.getElementById('donationNote').value.trim();
+    const customAmt = parseInt(customAmountInput.value) || 0;
+    const total = totalDonation + customAmt;
+    const date = document.getElementById('donationDate').value;
+
+    if (!name || total <= 0) {
+      alert("Donor name and amount are required.");
+      return;
+    }
+
+    const donationData = {
+      date,
+      name,
+      note,
+      amount: total
+    };
+
+    google.script.run.withSuccessHandler(function (res) {
+      if (res.success) {
+        const htmlContent = `
+<pre style="font-family: monospace; font-size: 14px;">
+Shree Swaminarayan Gurukul
+----------------------------
+         🙏 DONATION 🙏
+----------------------------
+
+Date   : ${date}
+Name   : ${name}
+Amount : ₹${total}
+Note   : ${note || '-'}
+
+🙏 Thank you for your support! 🙏
+</pre>`;
+        const win = window.open('', '', 'width=300,height=400');
+        win.document.write(`
+          <html><head><title>Print</title></head>
+          <body onload="window.print(); window.onafterprint = () => window.close();">
+            ${htmlContent}
+          </body></html>
+        `);
+        win.document.close();
+
+        // Reset form
+        totalDonation = 0;
+        donationForm.reset();
+        updateTotal();
+        document.getElementById('donationDate').value = new Date().toLocaleDateString('en-GB');
+      } else {
+        alert("Saving failed.");
+      }
+    }).addDonation(donationData);
+  });
+
+  updateTotal();
+</script>
+
+
     <!-- Voucher List Card -->
     <div class="card" style="grid-column: span 2;">
       <h2>Voucher List</h2>
@@ -127,8 +281,6 @@
     </div>
 
   </div>
-  <canvas id="voucherCanvas" width="280" height="400" style="display:none;"></canvas>
-
 
   <script>
     const form = document.getElementById('voucherForm');
@@ -181,75 +333,127 @@
   </script>
 
   <script>
-  function printVoucher(voucherJson) {
-  const voucher = JSON.parse(voucherJson);
-  const canvas = document.getElementById('voucherCanvas');
-  const ctx = canvas.getContext('2d');
+    function printVoucher(voucherJson) {
+      const voucher = JSON.parse(voucherJson);
 
-  // Clear canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const todayTime = new Date().toLocaleTimeString('en-GB'); // HH:MM:SS
 
-  // Settings
-  ctx.fillStyle = '#000';
-  ctx.font = '12px monospace';
-  let y = 20;
-  const lineHeight = 16;
+      const htmlContent = `
+<pre style="font-family: monospace; font-size: 14px;">
+Shree Swaminarayan Gurukul
+----------------------------
+   INCOME / EXPENSE VOUCHER
+----------------------------
 
-  // Header
-  ctx.font = 'bold 14px monospace';
-  ctx.textAlign = 'center';
-  ctx.fillText('Shree Swaminarayan Gurukul', canvas.width / 2, y);
-  y += lineHeight;
+ID         : ${voucher.ID}
+Date       : ${voucher.Date}
+Time       : ${todayTime}
+Type       : ${voucher.Type}
+Amount     : ₹${voucher.Amount}
+----------------------------
+Ledger     : ${voucher.Ledger}
+Dept.      : ${voucher.Department}
+Desc.      : ${voucher.Description}
 
-  ctx.font = '12px monospace';
-  ctx.textAlign = 'left';
-  y += 10;
+🙏 Jay Swaminarayan 🙏
+</pre>`;
 
-  // Details
-  const lines = [
-    `ID: ${voucher.ID}`,
-    `Date: ${voucher.Date}`,
-    `Type: ${voucher.Type}`,
-    `Amount: ₹${voucher.Amount}`,
-    `Description: ${voucher.Description}`,
-    `Ledger: ${voucher.Ledger}`,
-    `Department: ${voucher.Department}`,
-  ];
+      const win = window.open('', '', 'width=1200,height=800');
+      win.document.write(`
+      <html><head><title>Print</title></head>
+      <body onload="window.print(); window.onafterprint = () => window.close();">
+        ${htmlContent}
+      </body></html>
+    `);
+      win.document.close();
+    }
+  </script>
 
-  lines.forEach(line => {
-    ctx.fillText(line, 10, y);
-    y += lineHeight;
-  });
+  <script>
+    // FOOD PASS Data
+    const foodRate = 90;
 
-  // Footer
-  y += 10;
-  ctx.textAlign = 'center';
-  ctx.fillText('🙏 Thank you 🙏', canvas.width / 2, y);
+    const quantityInput = document.getElementById('quantityInput');
+    const totalAmountInput = document.getElementById('totalAmount');
+    const foodPassForm = document.getElementById('foodPassForm');
+    const printFoodPass = document.getElementById('print-food-pass');
 
-  // Show canvas (for preview/testing)
-  canvas.style.display = 'block';
+    totalAmountInput.value = '₹' + foodRate;
 
-  // For printing or sending to thermal printer, you can use:
-  // - `canvas.toDataURL()` to get image
-  // - or connect to printer via WebUSB / WebBluetooth
+    quantityInput.addEventListener('input', () => {
+      const qty = parseInt(quantityInput.value) || 0;
+      totalAmountInput.value = '₹' + (qty * foodRate);
+    });
 
-  // const canvas = document.getElementById('voucherCanvas');
-  const dataUrl = canvas.toDataURL();
+    foodPassForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      printFoodPass.setAttribute('disabled', 'disabled');
 
-  const win = window.open('', '', 'width=300,height=400');
-  win.document.write(`
-    <html><head><title>Print</title></head><body style="margin:0;">
-      <img src="${dataUrl}" onload="window.print();window.onafterprint=()=>window.close();" />
-    </body></html>
-  `);
-  win.document.close();
-}
+      const quantity = parseInt(quantityInput.value);
+      const total = quantity * foodRate;
+      const today = new Date().toLocaleDateString('en-GB'); // DD/MM/YYYY
+      const todayTime = new Date().toLocaleTimeString('en-GB');
 
+      const foodPassData = {
+        quantity,
+        totalAmount: total,
+        date: `${today}`,
+        time: `${todayTime}`
+      };
 
+      // Save to Google Sheets
+      google.script.run.withSuccessHandler(function (res) {
+        if (res.success) {
+          // Print only after saving
+          const htmlContent = `
+<pre style="font-family: monospace; font-size: 14px;">
+Shree Swaminarayan Gurukul
+----------------------------
+        🍛 FOOD PASS 🍛        
+----------------------------
 
-</script>
+Date       : ${today} 
+Time       : ${todayTime}
+Quantity   : ${quantity}
+Rate       : ₹${foodRate}
+----------------------------
+Total      : ₹${total}
 
+🙏 Jay Swaminarayan 🙏
+</pre>`;
 
+          const win = window.open('', '', 'width=1200,height=800');
+          win.document.write(`
+          <html><head><title>Print</title></head>
+          <body onload="window.print(); window.onafterprint = () => window.close();">
+            ${htmlContent}
+          </body></html>
+        `);
+          win.document.close();
+
+          foodPassForm.reset();
+          quantityInput.value = 1;
+          quantityInput.dispatchEvent(new Event('input'));
+          printFoodPass.removeAttribute('disabled');
+        } else {
+          alert('Failed to save. Please try again.');
+          printFoodPass.removeAttribute('disabled');
+        }
+      }).addFoodPass(foodPassData);
+
+    });
+
+    printFoodPass.removeAttribute('disabled');
+    // Set initial total
+    quantityInput.dispatchEvent(new Event('input'));
+  </script>
+
+<div style="text-align: center;">
+  <h3>Desiged & Developed By: Sahajanand Digital</h3>
+  <a href="http://sahajananddigital.in" target="_blank" rel="noopener noreferrer">
+    <img src="https://sahajananddigital.in/images/logo.png" alt="" style="width: 100px; height: auto;">
+  </a>
+</div>
 </body>
 
 </html>

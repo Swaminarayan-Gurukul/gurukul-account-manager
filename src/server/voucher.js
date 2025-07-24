@@ -4,20 +4,22 @@ export function getVouchers() {
   const headers = data[0];
   const rows = data.slice(1); // Exclude header row
 
-  // Get last 15 rows only
-  const last15Rows = rows.slice(-15);
+  // Get last 15 rows and reverse to show latest first
+  const last15Rows = rows.slice(-15).reverse();
 
   const sendJsonObject = last15Rows.map((row, index) => {
     const obj = {};
     headers.forEach((h, i) => {
       obj[h] = row[i] !== undefined && row[i] !== null ? row[i] : "";
     });
-    obj.ID = rows.length - last15Rows.length + index + 1; // Correct ID based on full data
+    // Correct ID as per reversed index
+    obj.ID = rows.length - index;
     return obj;
   });
 
   return JSON.stringify(sendJsonObject);
 }
+
 
 
 export function addVoucher(data) {
@@ -31,7 +33,8 @@ export function addVoucher(data) {
     data.amount,
     data.description,
     data.ledger,
-    data.department
+    data.department,
+    data.personname,
   ]);
 
   return { success: true, id };
