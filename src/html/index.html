@@ -43,6 +43,11 @@
       border-radius: 4px;
     }
 
+    button{
+      background-color: rgb(26 116 232);
+      color: white;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -63,6 +68,10 @@
 </head>
 
 <body>
+
+  <div style="text-align: center; margin-top: 15px; margin-bottom: 15px;">
+    <img style="width: 300px;" src="https://gurukul.org/wp-content/uploads/2023/09/head-logo-1.svg" alt="" srcset="" >
+  </div>
 
   <div class="grid">
     <!-- Voucher Card -->
@@ -236,10 +245,10 @@ Note   : ${note || '-'}
 
 🙏 Thank you for your support! 🙏
 </pre>`;
-        const win = window.open('', '', 'width=300,height=400');
+        const win = window.open('', '', 'width=1200,height=800');
         win.document.write(`
           <html><head><title>Print</title></head>
-          <body onload="window.print(); window.onafterprint = () => window.close();">
+          <body onload="window.onafterprint = () => window.close(); window.print(); ">
             ${htmlContent}
           </body></html>
         `);
@@ -425,7 +434,7 @@ Total      : ₹${total}
           const win = window.open('', '', 'width=1200,height=800');
           win.document.write(`
           <html><head><title>Print</title></head>
-          <body onload="window.print(); window.onafterprint = () => window.close();">
+          <body onload="window.onafterprint = () => window.close(); window.print();">
             ${htmlContent}
           </body></html>
         `);
@@ -448,10 +457,10 @@ Total      : ₹${total}
     quantityInput.dispatchEvent(new Event('input'));
   </script>
 
-<div style="text-align: center;">
+<div style="text-align: center; margin-top: 15px; margin-bottom: 15px;">
   <h3>Desiged & Developed By: Sahajanand Digital</h3>
   <a href="http://sahajananddigital.in" target="_blank" rel="noopener noreferrer">
-    <img src="https://sahajananddigital.in/images/logo.png" alt="" style="width: 100px; height: auto;">
+    <img src="https://sahajananddigital.in/images/logo.png" alt="" style="width: 250px; height: auto;">
   </a>
 </div>
 </body>
