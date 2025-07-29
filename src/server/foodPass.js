@@ -11,9 +11,10 @@ export function addFoodPass(data) {
   sheet.appendRow([
     data.date,
     data.time,
+    data.foodPassTime,
     data.quantity,
     data.totalAmount
   ]);
 
-  return { success: true };
+  return { success: true, lastRow: sheet.getLastRow()};
 }

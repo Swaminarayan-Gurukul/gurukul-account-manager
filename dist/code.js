@@ -486,8 +486,8 @@ var app = (function (o) {
       n ||
         ((n = t.insertSheet(r)),
         n.appendRow(["Date", "Time", "Quantity", "TotalAmount"])),
-      n.appendRow([e.date, e.time, e.quantity, e.totalAmount]),
-      { success: !0 }
+      n.appendRow([e.date, e.time, e.foodPassTime, e.quantity, e.totalAmount]),
+      { success: !0, lastRow: n.getLastRow() }
     );
   }
   function K(e) {

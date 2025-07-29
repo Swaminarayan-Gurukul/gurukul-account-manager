@@ -145,7 +145,7 @@
     </div>
 
     <div>
-      <label>Note:
+      <label>Note (Optional):
         <input type="text" id="donationNote">
       </label>
     </div>
@@ -233,17 +233,17 @@
       if (res.success) {
         const htmlContent = `
 <pre style="font-family: monospace; font-size: 14px;">
-Shree Swaminarayan Gurukul
-----------------------------
+  Shree Swaminarayan Gurukul
+ ----------------------------
          🙏 DONATION 🙏
-----------------------------
+ ----------------------------
 
-Date   : ${date}
-Name   : ${name}
-Amount : ₹${total}
-Note   : ${note || '-'}
+ Date   : ${date}
+ Name   : ${name}
+ Amount : ₹${total}
+ Details   : ${note || '-'}
 
-🙏 Thank you for your support! 🙏
+🙏 🙏 Jay Swaminarayan 🙏 🙏
 </pre>`;
         const win = window.open('', '', 'width=1200,height=800');
         win.document.write(`
@@ -344,20 +344,17 @@ Note   : ${note || '-'}
   <script>
     function printVoucher(voucherJson) {
       const voucher = JSON.parse(voucherJson);
-
-      const todayTime = new Date().toLocaleTimeString('en-GB'); // HH:MM:SS
+      const voucherDate = new Date(voucher.Date).toLocaleDateString('en-GB'); // DD/MM/YYYY
 
       const htmlContent = `
-<pre style="font-family: monospace; font-size: 14px;">
+<pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
 Shree Swaminarayan Gurukul
 ----------------------------
-   INCOME / EXPENSE VOUCHER
+  ${voucher.Type.toUpperCase()} VOUCHER
 ----------------------------
 
 ID         : ${voucher.ID}
-Date       : ${voucher.Date}
-Time       : ${todayTime}
-Type       : ${voucher.Type}
+Date       : ${voucherDate}
 Amount     : ₹${voucher.Amount}
 ----------------------------
 Ledger     : ${voucher.Ledger}
@@ -370,7 +367,7 @@ Desc.      : ${voucher.Description}
       const win = window.open('', '', 'width=1200,height=800');
       win.document.write(`
       <html><head><title>Print</title></head>
-      <body onload="window.print(); window.onafterprint = () => window.close();">
+      <body onload="window.onafterprint = () => window.close(); window.print();">
         ${htmlContent}
       </body></html>
     `);
@@ -402,12 +399,14 @@ Desc.      : ${voucher.Description}
       const total = quantity * foodRate;
       const today = new Date().toLocaleDateString('en-GB'); // DD/MM/YYYY
       const todayTime = new Date().toLocaleTimeString('en-GB');
+      const foodPassTime = todayTime < '12:00:00' ? 'Morning' : todayTime < '17:00:00' ? 'Lunch' : 'Dinner';
 
       const foodPassData = {
         quantity,
         totalAmount: total,
         date: `${today}`,
-        time: `${todayTime}`
+        time: `${todayTime}`,
+        foodPassTime: foodPassTime
       };
 
       // Save to Google Sheets
@@ -415,14 +414,15 @@ Desc.      : ${voucher.Description}
         if (res.success) {
           // Print only after saving
           const htmlContent = `
-<pre style="font-family: monospace; font-size: 14px;">
+<pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
 Shree Swaminarayan Gurukul
 ----------------------------
         🍛 FOOD PASS 🍛        
 ----------------------------
 
+ID         : ${res.lastRow}
 Date       : ${today} 
-Time       : ${todayTime}
+Time       : ${foodPassData.time} (${foodPassData.foodPassTime})
 Quantity   : ${quantity}
 Rate       : ₹${foodRate}
 ----------------------------
