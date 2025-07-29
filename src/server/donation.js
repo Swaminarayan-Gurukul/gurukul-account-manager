@@ -12,6 +12,7 @@ export function addDonation(data) {
     data.date,
     data.name,
     data.note,
+    data.phone || "",
     data.amount
   ]);
 

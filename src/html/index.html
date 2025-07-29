@@ -145,6 +145,12 @@
     </div>
 
     <div>
+      <label>Phone Number:
+        <input type="text" id="donorPhone" required>
+      </label>
+    </div>
+
+    <div>
       <label>Note (Optional):
         <input type="text" id="donationNote">
       </label>
@@ -183,6 +189,7 @@
   const totalInput = document.getElementById('totalDonation');
   const donationForm = document.getElementById('donationForm');
   const resetDonationForm = document.getElementById('resetDonationForm');
+  const donorPhone = document.getElementById('donorPhone');
 
   resetDonationForm.addEventListener('click', function(){
     donationForm.reset();
@@ -226,21 +233,28 @@
       date,
       name,
       note,
+      phone: donorPhone.value.trim(),
       amount: total
     };
 
     google.script.run.withSuccessHandler(function (res) {
       if (res.success) {
         const htmlContent = `
-<pre style="font-family: monospace; font-size: 14px;">
+  <div style="text-align: center; font-family: monospace; font-size: 14px; font-weight: bold;">
+    <img src="https://raw.githubusercontent.com/sahajananddigital/gurukul-account-manager/refs/heads/master/images/gurukul/gurukul_monogram.png" alt="" style="width: 150px; height: auto;">
+  </div>  
+<pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
   Shree Swaminarayan Gurukul
- ----------------------------
-         🙏 DONATION 🙏
- ----------------------------
+      Ahmedabad - Nikol
+
+  ✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻        
+          DONATION 
+  ✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻
 
  Date   : ${date}
  Name   : ${name}
  Amount : ₹${total}
+ Phone  : ${res.phone || '-'}
  Details   : ${note || '-'}
 
 🙏 🙏 Jay Swaminarayan 🙏 🙏
