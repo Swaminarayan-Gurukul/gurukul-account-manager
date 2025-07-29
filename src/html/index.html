@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gurukul Accounts Manager</title>
   <base target="_top">
   <style>
     body {
@@ -48,6 +50,10 @@
       color: white;
     }
 
+    .presetAmount{
+      width: 25%;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -68,6 +74,14 @@
 </head>
 
 <body>
+  <nav>
+    <h1>
+      <img src="" alt="" srcset="">
+    </h1>
+    <ul>
+      <li></li>
+    </ul>
+  </nav>
 
   <div style="text-align: center; margin-top: 15px; margin-bottom: 15px;">
     <img style="width: 300px;" src="https://gurukul.org/wp-content/uploads/2023/09/head-logo-1.svg" alt="" srcset="" >
@@ -146,10 +160,28 @@
 
     <div>
       <label>Phone Number:
-        <input type="text" id="donorPhone" required>
+        <input type="text" id="donorPhone" minlength="10" maxlength="12" required>
       </label>
     </div>
 
+    <div>
+      <label>Ledger:
+        <select id="donationLedger" required>
+          <option value="">-- Select Ledger --</option>
+          <option value="Donation">Donation</option>
+          <option value="Hostel">Hostel</option>
+          <option value="Kitchen">Kitchen</option>
+          <option value="Shreeji Prasadam">Shreeji Prasadam</option>
+          <option value="Store Stationary">Store Stationary</option>
+          <option value="Shreeji Store">Shreeji Store</option>
+          <option value="Satsang Mandal">Satsang Mandal</option>
+          <option value="Other Income">Other Income</option>
+        </select>
+      </label>
+    </div>
+
+
+    
     <div>
       <label>Note (Optional):
         <input type="text" id="donationNote">
@@ -157,7 +189,7 @@
     </div>
 
     <div>
-      <label>Amount:</label><br>
+      <label>Amount:</label>
       <button type="button" class="presetAmount" data-amt="100">₹100</button>
       <button type="button" class="presetAmount" data-amt="200">₹200</button>
       <button type="button" class="presetAmount" data-amt="250">₹250</button>
@@ -223,6 +255,7 @@
     const customAmt = parseInt(customAmountInput.value) || 0;
     const total = totalDonation + customAmt;
     const date = document.getElementById('donationDate').value;
+    const donationLedger = document.getElementById('donationLedger').value;
 
     if (!name || total <= 0) {
       alert("Donor name and amount are required.");
@@ -232,6 +265,7 @@
     const donationData = {
       date,
       name,
+      ledger: donationLedger,
       note,
       phone: donorPhone.value.trim(),
       amount: total
@@ -244,19 +278,30 @@
     <img src="https://raw.githubusercontent.com/sahajananddigital/gurukul-account-manager/refs/heads/master/images/gurukul/gurukul_monogram.png" alt="" style="width: 150px; height: auto;">
   </div>  
 <pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
-  Shree Swaminarayan Gurukul
+  Shree Swaminarayan Gurukul 
       Ahmedabad - Nikol
 
-  ✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻        
-          DONATION 
+  ✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻  
+  ✻        DONATION        ✻
   ✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻
 
- Date   : ${date}
- Name   : ${name}
- Amount : ₹${total}
- Phone  : ${res.phone || '-'}
- Details   : ${note || '-'}
+ ID      : ${res.lastRow}
+ Date    : ${date}
+ Name    : ${name}
+ Amount  : ₹${total}
+ Phone   : ${donorPhone.value.trim() || '-'}
+ Details : ${note || '-'}
 
+ ✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻
+ 
+ Gurkul Activities:
+  ✻ Morning Evening Aarti
+  ✻ Daily Shiramani Pooja
+  ✻ Weekly Ravi Sabha
+  ✻ Saturday Youth Sabha
+  ✻ Monthly Poonam Abhishek
+  ✻ Yagnya & Havan
+  
 🙏 🙏 Jay Swaminarayan 🙏 🙏
 </pre>`;
         const win = window.open('', '', 'width=1200,height=800');

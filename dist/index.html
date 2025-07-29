@@ -48,6 +48,10 @@
       color: white;
     }
 
+    .presetAmount{
+      width: 25%;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -145,13 +149,37 @@
     </div>
 
     <div>
+      <label>Phone Number:
+        <input type="text" id="donorPhone" minlength="10" maxlength="12" required>
+      </label>
+    </div>
+
+    <div>
+      <label>Ledger:
+        <select id="donationLedger" required>
+          <option value="">-- Select Ledger --</option>
+          <option value="Donation">Donation</option>
+          <option value="Hostel">Hostel</option>
+          <option value="Kitchen">Kitchen</option>
+          <option value="Shreeji Prasadam">Shreeji Prasadam</option>
+          <option value="Store Stationary">Store Stationary</option>
+          <option value="Shreeji Store">Shreeji Store</option>
+          <option value="Satsang Mandal">Satsang Mandal</option>
+          <option value="Other Income">Other Income</option>
+        </select>
+      </label>
+    </div>
+
+
+    
+    <div>
       <label>Note (Optional):
         <input type="text" id="donationNote">
       </label>
     </div>
 
     <div>
-      <label>Amount:</label><br>
+      <label>Amount:</label>
       <button type="button" class="presetAmount" data-amt="100">₹100</button>
       <button type="button" class="presetAmount" data-amt="200">₹200</button>
       <button type="button" class="presetAmount" data-amt="250">₹250</button>
@@ -183,6 +211,7 @@
   const totalInput = document.getElementById('totalDonation');
   const donationForm = document.getElementById('donationForm');
   const resetDonationForm = document.getElementById('resetDonationForm');
+  const donorPhone = document.getElementById('donorPhone');
 
   resetDonationForm.addEventListener('click', function(){
     donationForm.reset();
@@ -216,6 +245,7 @@
     const customAmt = parseInt(customAmountInput.value) || 0;
     const total = totalDonation + customAmt;
     const date = document.getElementById('donationDate').value;
+    const donationLedger = document.getElementById('donationLedger').value;
 
     if (!name || total <= 0) {
       alert("Donor name and amount are required.");
@@ -225,7 +255,9 @@
     const donationData = {
       date,
       name,
+      ledger: donationLedger,
       note,
+      phone: donorPhone.value.trim(),
       amount: total
     };
 
@@ -233,19 +265,33 @@
       if (res.success) {
         const htmlContent = `
   <div style="text-align: center; font-family: monospace; font-size: 14px; font-weight: bold;">
-    <img src="https://raw.githubusercontent.com/sahajananddigital/gurukul-account-manager/refs/heads/master/images/gurukul/gurukul_monogram.png" alt="" style="width: 300px; height: auto;">
+    <img src="https://raw.githubusercontent.com/sahajananddigital/gurukul-account-manager/refs/heads/master/images/gurukul/gurukul_monogram.png" alt="" style="width: 150px; height: auto;">
   </div>  
-<pre style="font-family: monospace; font-size: 14px;">
-  Shree Swaminarayan Gurukul
- ----------------------------
-         🙏 DONATION 🙏
- ----------------------------
+<pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
+  Shree Swaminarayan Gurukul 
+      Ahmedabad - Nikol
 
- Date   : ${date}
- Name   : ${name}
- Amount : ₹${total}
- Details   : ${note || '-'}
+  ✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻  
+  ✻        DONATION        ✻
+  ✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻
 
+ ID      : ${res.lastRow}
+ Date    : ${date}
+ Name    : ${name}
+ Amount  : ₹${total}
+ Phone   : ${donorPhone.value.trim() || '-'}
+ Details : ${note || '-'}
+
+ ✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻
+ 
+ Gurkul Activities:
+  ✻ Morning Evening Aarti
+  ✻ Daily Shiramani Pooja
+  ✻ Weekly Ravi Sabha
+  ✻ Saturday Youth Sabha
+  ✻ Monthly Poonam Abhishek
+  ✻ Yagnya & Havan
+  
 🙏 🙏 Jay Swaminarayan 🙏 🙏
 </pre>`;
         const win = window.open('', '', 'width=1200,height=800');

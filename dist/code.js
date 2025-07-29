@@ -91,7 +91,7 @@ var app = (function (o) {
         (r) => `%${r.charCodeAt(0).toString(16).toUpperCase()}`,
       ),
     m = Symbol("encodeFragmentIdentifier");
-  function P(e) {
+  function L(e) {
     switch (e.arrayFormat) {
       case "index":
         return (r) => (t, n) => {
@@ -147,7 +147,7 @@ var app = (function (o) {
               : [...t, [f(r, e), "=", f(n, e)].join("")];
     }
   }
-  function L(e) {
+  function P(e) {
     let r;
     switch (e.arrayFormat) {
       case "index":
@@ -244,7 +244,7 @@ var app = (function (o) {
             .map((r) => e[r])
         : e;
   }
-  function N(e) {
+  function w(e) {
     const r = e.indexOf("#");
     return r !== -1 && (e = e.slice(0, r)), e;
   }
@@ -253,7 +253,7 @@ var app = (function (o) {
     const t = e.indexOf("#");
     return t !== -1 && (r = e.slice(t)), r;
   }
-  function w(e, r, t) {
+  function N(e, r, t) {
     return t === "string" && typeof e == "string"
       ? e
       : typeof t == "function" && typeof e == "string"
@@ -274,7 +274,7 @@ var app = (function (o) {
             : e;
   }
   function g(e) {
-    e = N(e);
+    e = w(e);
     const r = e.indexOf("?");
     return r === -1 ? "" : e.slice(r + 1);
   }
@@ -290,7 +290,7 @@ var app = (function (o) {
       ...r,
     }),
       A(r.arrayFormatSeparator);
-    const t = L(r),
+    const t = P(r),
       n = Object.create(null);
     if (typeof e != "string" || ((e = e.trim().replace(/^[?#&]/, "")), !e))
       return n;
@@ -313,12 +313,12 @@ var app = (function (o) {
       if (typeof c == "object" && c !== null && r.types[s] !== "string")
         for (const [a, i] of Object.entries(c)) {
           const u = r.types[s] ? r.types[s].replace("[]", "") : void 0;
-          c[a] = w(i, r, u);
+          c[a] = N(i, r, u);
         }
       else
         typeof c == "object" && c !== null && r.types[s] === "string"
           ? (n[s] = Object.values(c).join(r.arrayFormatSeparator))
-          : (n[s] = w(c, r, r.types[s]));
+          : (n[s] = N(c, r, r.types[s]));
     return r.sort === !1
       ? n
       : (r.sort === !0
@@ -344,7 +344,7 @@ var app = (function (o) {
       A(r.arrayFormatSeparator);
     const t = (a) =>
         (r.skipNull && V(e[a])) || (r.skipEmptyString && e[a] === ""),
-      n = P(r),
+      n = L(r),
       s = {};
     for (const [a, i] of Object.entries(e)) t(a) || (s[a] = i);
     const c = Object.keys(s);
@@ -386,7 +386,7 @@ var app = (function (o) {
   }
   function R(e, r) {
     r = { encode: !0, strict: !0, [m]: !0, ...r };
-    const t = N(e.url).split("?")[0] || "",
+    const t = w(e.url).split("?")[0] || "",
       n = g(e.url),
       s = { ...y(n, { sort: !1 }), ...e.query };
     let c = j(s, r);
@@ -498,8 +498,8 @@ var app = (function (o) {
       n ||
         ((n = t.insertSheet(r)),
         n.appendRow(["Date", "Name", "Note", "Amount"])),
-      n.appendRow([e.date, e.name, e.note, e.amount]),
-      { success: !0 }
+      n.appendRow([e.date, e.name, e.ledger, e.note, e.phone, e.amount]),
+      { success: !0, lastRow: n.getLastRow() }
     );
   }
   return (

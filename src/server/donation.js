@@ -11,10 +11,11 @@ export function addDonation(data) {
   sheet.appendRow([
     data.date,
     data.name,
+    data.ledger,
     data.note,
-    data.phone || "",
+    data.phone,
     data.amount
   ]);
 
-  return { success: true };
+  return { success: true, lastRow: sheet.getLastRow() };
 }
