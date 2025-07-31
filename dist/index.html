@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gurukul Accounts Manager</title>
   <base target="_top">
   <style>
     body {
@@ -72,6 +74,14 @@
 </head>
 
 <body>
+  <nav>
+    <h1>
+      <img src="" alt="" srcset="">
+    </h1>
+    <ul>
+      <li></li>
+    </ul>
+  </nav>
 
   <div style="text-align: center; margin-top: 15px; margin-bottom: 15px;">
     <img style="width: 300px;" src="https://gurukul.org/wp-content/uploads/2023/09/head-logo-1.svg" alt="" srcset="" >
@@ -448,7 +458,7 @@ Desc.      : ${voucher.Description}
       const total = quantity * foodRate;
       const today = new Date().toLocaleDateString('en-GB'); // DD/MM/YYYY
       const todayTime = new Date().toLocaleTimeString('en-GB');
-      const foodPassTime = todayTime < '12:00:00' ? 'Morning' : todayTime < '17:00:00' ? 'Lunch' : 'Dinner';
+      const foodPassTime = todayTime < '17:00:00' ? 'Lunch' : 'Dinner';
 
       const foodPassData = {
         quantity,

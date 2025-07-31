@@ -458,7 +458,7 @@ Desc.      : ${voucher.Description}
       const total = quantity * foodRate;
       const today = new Date().toLocaleDateString('en-GB'); // DD/MM/YYYY
       const todayTime = new Date().toLocaleTimeString('en-GB');
-      const foodPassTime = todayTime < '12:00:00' ? 'Morning' : todayTime < '17:00:00' ? 'Lunch' : 'Dinner';
+      const foodPassTime = todayTime < '17:00:00' ? 'Lunch' : 'Dinner';
 
       const foodPassData = {
         quantity,
