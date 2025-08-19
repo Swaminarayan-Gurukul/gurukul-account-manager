@@ -1,6 +1,6 @@
 var app = (function (o) {
   "use strict";
-  const $ = () => {
+  const U = () => {
       try {
         const { sendAs: e = [] } = Gmail.Users.Settings.SendAs.list("me");
         if (e.length) return e.map((r) => r.sendAsEmail);
@@ -9,9 +9,9 @@ var app = (function (o) {
       }
       return [Session.getActiveUser().getEmail()];
     },
-    F = "%[a-f0-9]{2}",
-    p = new RegExp("(" + F + ")|([^%]+?)", "gi"),
-    S = new RegExp("(" + F + ")+", "gi");
+    p = "%[a-f0-9]{2}",
+    F = new RegExp("(" + p + ")|([^%]+?)", "gi"),
+    S = new RegExp("(" + p + ")+", "gi");
   function l(e, r) {
     try {
       return [decodeURIComponent(e.join(""))];
@@ -22,24 +22,24 @@ var app = (function (o) {
       n = e.slice(r);
     return Array.prototype.concat.call([], l(t), l(n));
   }
-  function D(e) {
+  function $(e) {
     try {
       return decodeURIComponent(e);
     } catch {
-      let r = e.match(p) || [];
+      let r = e.match(F) || [];
       for (let t = 1; t < r.length; t++)
-        (e = l(r, t).join("")), (r = e.match(p) || []);
+        (e = l(r, t).join("")), (r = e.match(F) || []);
       return e;
     }
   }
-  function C(e) {
+  function I(e) {
     const r = { "%FE%FF": "��", "%FF%FE": "��" };
     let t = S.exec(e);
     for (; t; ) {
       try {
         r[t[0]] = decodeURIComponent(t[0]);
       } catch {
-        const s = D(t[0]);
+        const s = $(t[0]);
         s !== t[0] && (r[t[0]] = s);
       }
       t = S.exec(e);
@@ -49,7 +49,7 @@ var app = (function (o) {
     for (const s of n) e = e.replace(new RegExp(s, "g"), r[s]);
     return e;
   }
-  function I(e) {
+  function C(e) {
     if (typeof e != "string")
       throw new TypeError(
         "Expected `encodedURI` to be of type `string`, got `" + typeof e + "`",
@@ -57,7 +57,7 @@ var app = (function (o) {
     try {
       return decodeURIComponent(e);
     } catch {
-      return C(e);
+      return I(e);
     }
   }
   function x(e, r) {
@@ -84,14 +84,14 @@ var app = (function (o) {
     const t = e.indexOf(r);
     return t === -1 ? [] : [e.slice(0, t), e.slice(t + r.length)];
   }
-  const V = (e) => e == null,
+  const P = (e) => e == null,
     T = (e) =>
       encodeURIComponent(e).replaceAll(
         /[!'()*]/g,
         (r) => `%${r.charCodeAt(0).toString(16).toUpperCase()}`,
       ),
     m = Symbol("encodeFragmentIdentifier");
-  function L(e) {
+  function V(e) {
     switch (e.arrayFormat) {
       case "index":
         return (r) => (t, n) => {
@@ -147,7 +147,7 @@ var app = (function (o) {
               : [...t, [f(r, e), "=", f(n, e)].join("")];
     }
   }
-  function P(e) {
+  function L(e) {
     let r;
     switch (e.arrayFormat) {
       case "index":
@@ -233,27 +233,27 @@ var app = (function (o) {
     return r.encode ? (r.strict ? T(e) : encodeURIComponent(e)) : e;
   }
   function d(e, r) {
-    return r.decode ? I(e) : e;
+    return r.decode ? C(e) : e;
   }
-  function O(e) {
+  function w(e) {
     return Array.isArray(e)
       ? e.sort()
       : typeof e == "object"
-        ? O(Object.keys(e))
+        ? w(Object.keys(e))
             .sort((r, t) => Number(r) - Number(t))
             .map((r) => e[r])
         : e;
   }
-  function w(e) {
+  function N(e) {
     const r = e.indexOf("#");
     return r !== -1 && (e = e.slice(0, r)), e;
   }
-  function B(e) {
+  function G(e) {
     let r = "";
     const t = e.indexOf("#");
     return t !== -1 && (r = e.slice(t)), r;
   }
-  function N(e, r, t) {
+  function O(e, r, t) {
     return t === "string" && typeof e == "string"
       ? e
       : typeof t == "function" && typeof e == "string"
@@ -274,11 +274,11 @@ var app = (function (o) {
             : e;
   }
   function g(e) {
-    e = w(e);
+    e = N(e);
     const r = e.indexOf("?");
     return r === -1 ? "" : e.slice(r + 1);
   }
-  function y(e, r) {
+  function h(e, r) {
     (r = {
       decode: !0,
       sort: !0,
@@ -290,7 +290,7 @@ var app = (function (o) {
       ...r,
     }),
       A(r.arrayFormatSeparator);
-    const t = P(r),
+    const t = L(r),
       n = Object.create(null);
     if (typeof e != "string" || ((e = e.trim().replace(/^[?#&]/, "")), !e))
       return n;
@@ -313,12 +313,12 @@ var app = (function (o) {
       if (typeof c == "object" && c !== null && r.types[s] !== "string")
         for (const [a, i] of Object.entries(c)) {
           const u = r.types[s] ? r.types[s].replace("[]", "") : void 0;
-          c[a] = N(i, r, u);
+          c[a] = O(i, r, u);
         }
       else
         typeof c == "object" && c !== null && r.types[s] === "string"
           ? (n[s] = Object.values(c).join(r.arrayFormatSeparator))
-          : (n[s] = N(c, r, r.types[s]));
+          : (n[s] = O(c, r, r.types[s]));
     return r.sort === !1
       ? n
       : (r.sort === !0
@@ -327,7 +327,7 @@ var app = (function (o) {
         ).reduce((s, c) => {
           const a = n[c];
           return (
-            (s[c] = a && typeof a == "object" && !Array.isArray(a) ? O(a) : a),
+            (s[c] = a && typeof a == "object" && !Array.isArray(a) ? w(a) : a),
             s
           );
         }, Object.create(null));
@@ -343,8 +343,8 @@ var app = (function (o) {
     }),
       A(r.arrayFormatSeparator);
     const t = (a) =>
-        (r.skipNull && V(e[a])) || (r.skipEmptyString && e[a] === ""),
-      n = L(r),
+        (r.skipNull && P(e[a])) || (r.skipEmptyString && e[a] === ""),
+      n = V(r),
       s = {};
     for (const [a, i] of Object.entries(e)) t(a) || (s[a] = i);
     const c = Object.keys(s);
@@ -367,7 +367,7 @@ var app = (function (o) {
         .join("&")
     );
   }
-  function E(e, r) {
+  function R(e, r) {
     var s;
     r = { decode: !0, ...r };
     let [t, n] = b(e, "#");
@@ -377,21 +377,21 @@ var app = (function (o) {
         url:
           ((s = t == null ? void 0 : t.split("?")) == null ? void 0 : s[0]) ??
           "",
-        query: y(g(e), r),
+        query: h(g(e), r),
         ...(r && r.parseFragmentIdentifier && n
           ? { fragmentIdentifier: d(n, r) }
           : {}),
       }
     );
   }
-  function R(e, r) {
+  function E(e, r) {
     r = { encode: !0, strict: !0, [m]: !0, ...r };
-    const t = w(e.url).split("?")[0] || "",
+    const t = N(e.url).split("?")[0] || "",
       n = g(e.url),
-      s = { ...y(n, { sort: !1 }), ...e.query };
+      s = { ...h(n, { sort: !1 }), ...e.query };
     let c = j(s, r);
     c && (c = `?${c}`);
-    let a = B(e.url);
+    let a = G(e.url);
     if (typeof e.fragmentIdentifier == "string") {
       const i = new URL(t);
       (i.hash = e.fragmentIdentifier),
@@ -399,39 +399,39 @@ var app = (function (o) {
     }
     return `${t}${c}${a}`;
   }
-  function U(e, r, t) {
+  function D(e, r, t) {
     t = { parseFragmentIdentifier: !0, [m]: !1, ...t };
-    const { url: n, query: s, fragmentIdentifier: c } = E(e, t);
-    return R({ url: n, query: x(s, r), fragmentIdentifier: c }, t);
+    const { url: n, query: s, fragmentIdentifier: c } = R(e, t);
+    return E({ url: n, query: x(s, r), fragmentIdentifier: c }, t);
   }
-  function M(e, r, t) {
+  function B(e, r, t) {
     const n = Array.isArray(r) ? (s) => !r.includes(s) : (s, c) => !r(s, c);
-    return U(e, n, t);
+    return D(e, n, t);
   }
-  const q = Object.freeze(
+  const M = Object.freeze(
       Object.defineProperty(
         {
           __proto__: null,
-          exclude: M,
+          exclude: B,
           extract: g,
-          parse: y,
-          parseUrl: E,
-          pick: U,
+          parse: h,
+          parseUrl: R,
+          pick: D,
           stringify: j,
-          stringifyUrl: R,
+          stringifyUrl: E,
         },
         Symbol.toStringTag,
         { value: "Module" },
       ),
     ),
-    G = () => {
+    q = () => {
       const e = "https://example.com",
         r = {
           name: "amit",
           location: "india",
           interests: ["workspace", "apps script"],
         },
-        t = q.stringify(r, { sort: !1, arrayFormat: "bracket" }),
+        t = M.stringify(r, { sort: !1, arrayFormat: "bracket" }),
         n = `${e}?${t}`;
       Logger.log(`URL: ${n}`);
     },
@@ -452,8 +452,8 @@ var app = (function (o) {
         .map((a, i) => {
           const u = {};
           return (
-            t.forEach((X, h) => {
-              u[X] = a[h] !== void 0 && a[h] !== null ? a[h] : "";
+            t.forEach((k, y) => {
+              u[k] = a[y] !== void 0 && a[y] !== null ? a[y] : "";
             }),
             (u.ID = n.length - i),
             u
@@ -502,14 +502,35 @@ var app = (function (o) {
       { success: !0, lastRow: n.getLastRow() }
     );
   }
+  function X(e) {
+    const r = "GatePass",
+      t = SpreadsheetApp.getActiveSpreadsheet();
+    let n = t.getSheetByName(r);
+    n ||
+      ((n = t.insertSheet(r)),
+      n.appendRow([
+        "Date",
+        "Name",
+        "Department",
+        "Purpose",
+        "OutTime",
+        "TimeIn",
+      ]));
+    const s = n.getLastRow();
+    return (
+      n.appendRow([new Date(), e.name, e.dept, e.purpose, e.outTime, ""]),
+      { success: !0, id: s }
+    );
+  }
   return (
     (o.addDonation = K),
     (o.addFoodPass = J),
+    (o.addGatePass = X),
     (o.addVoucher = Q),
     (o.doGet = H),
-    (o.getGmailAliases = $),
+    (o.getGmailAliases = U),
     (o.getVouchers = _),
-    (o.makeQueryString = G),
+    (o.makeQueryString = q),
     Object.defineProperty(o, Symbol.toStringTag, { value: "Module" }),
     o
   );
@@ -517,6 +538,7 @@ var app = (function (o) {
 
 const addDonation = (...args) => app.addDonation(...args);
 const addFoodPass = (...args) => app.addFoodPass(...args);
+const addGatePass = (...args) => app.addGatePass(...args);
 const addVoucher = (...args) => app.addVoucher(...args);
 const doGet = (...args) => app.doGet(...args);
 const getGmailAliases = (...args) => app.getGmailAliases(...args);

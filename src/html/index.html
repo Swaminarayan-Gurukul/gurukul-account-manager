@@ -74,14 +74,6 @@
 </head>
 
 <body>
-  <nav>
-    <h1>
-      <img src="" alt="" srcset="">
-    </h1>
-    <ul>
-      <li></li>
-    </ul>
-  </nav>
 
   <div style="text-align: center; margin-top: 15px; margin-bottom: 15px;">
     <img style="width: 300px;" src="https://gurukul.org/wp-content/uploads/2023/09/head-logo-1.svg" alt="" srcset="" >
@@ -95,8 +87,8 @@
         <label>Date: <input type="date" id="dateField" name="date" required></label>
         <label>Type:
           <select name="type" required>
-            <option value="Income">Income</option>
             <option value="Expense">Expense</option>
+            <option value="Income">Income</option>
           </select>
         </label>
         <label>Amount: <input type="number" name="amount" required></label>
@@ -141,6 +133,112 @@
         <button type="submit" id="print-food-pass">Print Food Pass</button>
       </form>
     </div>
+
+    <!-- Gate Pass Card -->
+<!-- Gate Pass Card -->
+<div class="card">
+  <h2>Gate Pass</h2>
+  <form id="gatePassForm">
+    <label>Name:
+      <input type="text" id="gatePassName" required>
+    </label>
+
+    <label>Department:
+      <input type="text" id="gatePassDept" required>
+    </label>
+
+    <label>Purpose:
+      <input type="text" id="gatePassPurpose" required>
+    </label>
+
+    <button type="submit" id="print-gate-pass">Print & Save</button>
+  </form>
+</div>
+
+<script>
+  const gatePassForm = document.getElementById('gatePassForm');
+  const printGatePassBtn = document.getElementById('print-gate-pass');
+
+  // Format time like 12:23 PM
+  const formatDateTime = () => {
+    const now = new Date();
+    return now.toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+
+  gatePassForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    printGatePassBtn.disabled = true;
+
+    const name = document.getElementById('gatePassName').value.trim();
+    const dept = document.getElementById('gatePassDept').value.trim();
+    const purpose = document.getElementById('gatePassPurpose').value.trim();
+    const outTime = formatDateTime();
+
+    if (!name || !dept || !purpose) {
+      alert("Please fill all required fields.");
+      printGatePassBtn.disabled = false;
+      return;
+    }
+
+    const gateData = {
+      name,
+      dept,
+      purpose,
+      outTime
+    };
+
+    // Send data to Apps Script and handle success
+    google.script.run.withSuccessHandler(function (res) {
+      if (res.success) {
+        const gatePassId = String(res.id).padStart(4, '0');
+
+        const printHtml = `
+<pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
+Shree Swaminarayan Gurukul
+----------------------------
+        🚪 GATE PASS        
+----------------------------
+ID   : ${gatePassId}
+Date : ${new Date().toLocaleDateString('en-IN')}
+Name :  ${name}
+Department : ${dept}
+Purpose : ${purpose}
+
+Time Out : ${outTime}
+Time In : _____________________
+Singnature : __________________
+
+</pre>`;
+
+        // Open print window
+        const win = window.open('', '', 'width=800,height=600');
+        win.document.write(`
+          <html>
+          <head><title>Gate Pass</title></head>
+          <body onload="window.onafterprint = () => window.close(); window.print();">
+            ${printHtml}
+          </body>
+          </html>
+        `);
+        win.document.close();
+
+        gatePassForm.reset();
+        printGatePassBtn.disabled = false;
+      } else {
+        alert("Error saving gate pass.");
+        printGatePassBtn.disabled = false;
+      }
+    }).addGatePass(gateData);
+  });
+</script>
+
+
+
 
     <!-- Donation Card -->
 <div class="card">
