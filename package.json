@@ -15,16 +15,25 @@
   },
   "keywords": [
     "google-apps-script",
-    "google-workspace"
+    "google-workspace",
+    "vite",
+    "react",
+    "tailwindcss",
+    "spa"
   ],
   "dependencies": {
     "apps-script-oauth2": "github:googleworkspace/apps-script-oauth2",
-    "query-string": "^9.1.1"
+    "query-string": "^9.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.27.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
     "@google/clasp": "^3.0.3-alpha",
+    "@tailwindcss/vite": "^4.0.0",
     "@types/google-apps-script": "^1.0.97",
+    "@vitejs/plugin-react": "^4.3.4",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-googleappsscript": "^1.0.5",
     "eslint-plugin-import": "^2.31.0",
@@ -33,7 +42,9 @@
     "globals": "^16.0.0",
     "prettier": "^3.5.3",
     "vite": "^6.2.6",
-    "vite-plugin-static-copy": "^2.3.1"
+    "vite-plugin-static-copy": "^2.3.1",
+    "vite-tsconfig-paths": "^5.1.2",
+    "vite-plugin-singlefile": "^2.3.0"
   },
   "bugs": {
     "url": "https://github.com/labnol/apps-script-starter/issues"

@@ -65,7 +65,7 @@ var app = (function (o) {
     if (Array.isArray(r))
       for (const n of r) {
         const s = Object.getOwnPropertyDescriptor(e, n);
-        s != null && s.enumerable && Object.defineProperty(t, n, s);
+        s?.enumerable && Object.defineProperty(t, n, s);
       }
     else
       for (const n of Reflect.ownKeys(e)) {
@@ -368,15 +368,12 @@ var app = (function (o) {
     );
   }
   function R(e, r) {
-    var s;
     r = { decode: !0, ...r };
     let [t, n] = b(e, "#");
     return (
       t === void 0 && (t = e),
       {
-        url:
-          ((s = t == null ? void 0 : t.split("?")) == null ? void 0 : s[0]) ??
-          "",
+        url: t?.split("?")?.[0] ?? "",
         query: h(g(e), r),
         ...(r && r.parseFragmentIdentifier && n
           ? { fragmentIdentifier: d(n, r) }
@@ -435,11 +432,11 @@ var app = (function (o) {
         n = `${e}?${t}`;
       Logger.log(`URL: ${n}`);
     },
-    H = () =>
+    _ = () =>
       HtmlService.createHtmlOutputFromFile("index.html")
         .setTitle("Google Apps Script")
         .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
-  function _() {
+  function H() {
     const r = SpreadsheetApp.getActiveSpreadsheet()
         .getSheetByName("Vouchers")
         .getDataRange()
@@ -527,20 +524,36 @@ var app = (function (o) {
     (o.addFoodPass = J),
     (o.addGatePass = X),
     (o.addVoucher = Q),
-    (o.doGet = H),
+    (o.doGet = _),
     (o.getGmailAliases = U),
-    (o.getVouchers = _),
+    (o.getVouchers = H),
     (o.makeQueryString = q),
     Object.defineProperty(o, Symbol.toStringTag, { value: "Module" }),
     o
   );
 })({});
 
-const addDonation = (...args) => app.addDonation(...args);
-const addFoodPass = (...args) => app.addFoodPass(...args);
-const addGatePass = (...args) => app.addGatePass(...args);
-const addVoucher = (...args) => app.addVoucher(...args);
-const doGet = (...args) => app.doGet(...args);
-const getGmailAliases = (...args) => app.getGmailAliases(...args);
-const getVouchers = (...args) => app.getVouchers(...args);
-const makeQueryString = (...args) => app.makeQueryString(...args);
+function addDonation() {
+  return app.addDonation.apply(this, arguments);
+}
+function addFoodPass() {
+  return app.addFoodPass.apply(this, arguments);
+}
+function addGatePass() {
+  return app.addGatePass.apply(this, arguments);
+}
+function addVoucher() {
+  return app.addVoucher.apply(this, arguments);
+}
+function doGet() {
+  return app.doGet.apply(this, arguments);
+}
+function getGmailAliases() {
+  return app.getGmailAliases.apply(this, arguments);
+}
+function getVouchers() {
+  return app.getVouchers.apply(this, arguments);
+}
+function makeQueryString() {
+  return app.makeQueryString.apply(this, arguments);
+}

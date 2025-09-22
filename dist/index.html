@@ -198,7 +198,7 @@
         const gatePassId = String(res.id).padStart(4, '0');
 
         const printHtml = `
-<pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
+<pre style="font-family: monospace; font-size: 14px; font-weight: bold; white-space: pre-wrap; word-wrap: break-word;">
 Shree Swaminarayan Gurukul
 ----------------------------
         🚪 GATE PASS        
@@ -372,33 +372,27 @@ Singnature : __________________
     google.script.run.withSuccessHandler(function (res) {
       if (res.success) {
         const htmlContent = `
-  <div style="text-align: center; font-family: monospace; font-size: 14px; font-weight: bold;">
-    <img src="https://raw.githubusercontent.com/sahajananddigital/gurukul-account-manager/refs/heads/master/images/gurukul/gurukul_monogram.png" alt="" style="width: 150px; height: auto;">
-  </div>  
-<pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
+<pre style="font-family: monospace; font-size: 14px; font-weight: bold; white-space: pre-wrap; word-wrap: break-word;">
   Shree Swaminarayan Gurukul 
       Ahmedabad - Nikol
+      
+          <b style:"font-size: 20px">DONATION</b>        
 
-  ✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻  
-  ✻        DONATION        ✻
-  ✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻
+ ID     : ${res.lastRow}
+ Date   : ${date}
+ Name   : ${name}
+ Amount : ₹${total}
+ Phone  : ${donorPhone.value.trim() || '-'}
+ Details: ${note || '-'}
 
- ID      : ${res.lastRow}
- Date    : ${date}
- Name    : ${name}
- Amount  : ₹${total}
- Phone   : ${donorPhone.value.trim() || '-'}
- Details : ${note || '-'}
-
- ✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻
+✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻
  
  Gurkul Activities:
   ✻ Morning Evening Aarti
-  ✻ Daily Shiramani Pooja
-  ✻ Weekly Ravi Sabha
+  ✻ Daily Shiramani & Pooja
+  ✻ Ravi Sabha
   ✻ Saturday Youth Sabha
-  ✻ Monthly Poonam Abhishek
-  ✻ Yagnya & Havan
+  ✻ Poonam Abhishek
   
 🙏 🙏 Jay Swaminarayan 🙏 🙏
 </pre>`;
@@ -504,7 +498,7 @@ Singnature : __________________
       const voucherDate = new Date(voucher.Date).toLocaleDateString('en-GB'); // DD/MM/YYYY
 
       const htmlContent = `
-<pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
+<pre style="font-family: monospace; font-size: 14px; font-weight: bold; white-space: pre-wrap; word-wrap: break-word;">
 Shree Swaminarayan Gurukul
 ----------------------------
   ${voucher.Type.toUpperCase()} VOUCHER
@@ -571,11 +565,11 @@ Desc.      : ${voucher.Description}
         if (res.success) {
           // Print only after saving
           const htmlContent = `
-<pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
+<pre style="font-family: monospace; font-size: 14px; font-weight: bold; white-space: pre-wrap; word-wrap: break-word;">
 Shree Swaminarayan Gurukul
-----------------------------
-        🍛 FOOD PASS 🍛        
-----------------------------
+-------------------------
+    🍛 FOOD PASS 🍛        
+-------------------------
 
 ID         : ${res.lastRow}
 Date       : ${today} 
