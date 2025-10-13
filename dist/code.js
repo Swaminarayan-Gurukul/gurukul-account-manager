@@ -1,6 +1,6 @@
 var app = (function (f) {
   "use strict";
-  const D = () => {
+  const $ = () => {
       try {
         const { sendAs: e = [] } = Gmail.Users.Settings.SendAs.list("me");
         if (e.length) return e.map((r) => r.sendAsEmail);
@@ -22,7 +22,7 @@ var app = (function (f) {
       n = e.slice(r);
     return Array.prototype.concat.call([], l(t), l(n));
   }
-  function U(e) {
+  function D(e) {
     try {
       return decodeURIComponent(e);
     } catch {
@@ -32,14 +32,14 @@ var app = (function (f) {
       return e;
     }
   }
-  function $(e) {
+  function U(e) {
     const r = { "%FE%FF": "��", "%FF%FE": "��" };
     let t = F.exec(e);
     for (; t; ) {
       try {
         r[t[0]] = decodeURIComponent(t[0]);
       } catch {
-        const s = U(t[0]);
+        const s = D(t[0]);
         s !== t[0] && (r[t[0]] = s);
       }
       t = F.exec(e);
@@ -57,7 +57,7 @@ var app = (function (f) {
     try {
       return decodeURIComponent(e);
     } catch {
-      return $(e);
+      return U(e);
     }
   }
   function I(e, r) {
@@ -497,8 +497,7 @@ var app = (function (f) {
       c = PropertiesService.getScriptProperties().getProperty("password"),
       a = { Authorization: "Basic " + Utilities.base64Encode(s + ":" + c) },
       i = {
-        message: `જય સ્વામિનારાયણ, આપ શ્રી ના તરફથી આજે રૂપિયા ${e.amount} નો સહયોગ પ્રાપ્ત થયેલ છે.
-- એકાઉન્ટ વિભાગ 
+        message: `જય સ્વામિનારાયણ, આપ શ્રી ના તરફથી આજે ${e.date} તારીખે રૂપિયા ${e.amount} નો સહયોગ પ્રાપ્ત થયેલ છે. 
 શ્રી સ્વામિનારાયણ ગુરુકુળ અમદાવાદ - નિકોલ`,
         phoneNumbers: [`+91${e.phone}`],
       },
@@ -548,7 +547,7 @@ var app = (function (f) {
     (f.addGatePass = K),
     (f.addVoucher = J),
     (f.doGet = H),
-    (f.getGmailAliases = D),
+    (f.getGmailAliases = $),
     (f.getVouchers = _),
     (f.makeQueryString = q),
     Object.defineProperty(f, Symbol.toStringTag, { value: "Module" }),
