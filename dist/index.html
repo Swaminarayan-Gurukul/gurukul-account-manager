@@ -1,82 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gurukul Accounts Manager</title>
   <base target="_top">
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 2rem;
-      background: #f9f9f9;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .card {
-      background: white;
-      padding: 1rem;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    h2 {
-      font-size: 1.2rem;
-      margin-bottom: 0.5rem;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-
-    input,
-    select,
-    button {
-      padding: 0.5rem;
-      margin-top: 0.25rem;
-      width: 100%;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    button{
-      background-color: rgb(26 116 232);
-      color: white;
-    }
-
-    .presetAmount{
-      width: 25%;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-
-    th,
-    td {
-      border: 1px solid #ccc;
-      padding: 0.5rem;
-      text-align: left;
-    }
-
-    th {
-      background: #eee;
-    }
+    body { font-family: sans-serif; margin: 2rem; background: #f9f9f9; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+    .card { background: white; padding: 1rem; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    h2 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+    label { display:block; margin-bottom:0.5rem; }
+    input, select, button { padding:0.5rem; margin-top:0.25rem; width:100%; border:1px solid #ccc; border-radius:4px; }
+    button{ background-color: rgb(26 116 232); color: white; cursor: pointer; }
+    .presetAmount{ width: 25%; display:inline-block; margin-right:4px; }
+    table { width:100%; border-collapse:collapse; margin-top:1rem; }
+    th, td { border:1px solid #ccc; padding:0.5rem; text-align:left; }
+    th { background:#eee; }
+    .small { font-size: 0.9rem; color:#666; }
+    .status { font-size: 0.9rem; margin-top:8px; color:#333; }
   </style>
 </head>
-
 <body>
 
-  <div style="text-align: center; margin-top: 15px; margin-bottom: 15px;">
-    <img style="width: 300px;" src="https://gurukul.org/wp-content/uploads/2023/09/head-logo-1.svg" alt="" srcset="" >
+  <div style="text-align:center; margin:15px 0;">
+    <img style="width:300px;" src="https://gurukul.org/wp-content/uploads/2023/09/head-logo-1.svg" alt="Gurukul Logo">
   </div>
 
   <div class="grid">
@@ -112,11 +60,9 @@
         <label>Name: <input type="text" name="personname" required></label>
         <label>Department: <input type="text" name="department" required></label>
         <button id="add-voucher" type="submit">Add Voucher</button>
+        <div class="small">Prints instantly and saves locally if offline; sync happens automatically.</div>
       </form>
     </div>
-
-    <!-- Add more cards here for Food Pass, Donation, etc. -->
-    <!-- Example Placeholder Card -->
 
     <!-- Food Pass Card -->
     <div class="card">
@@ -125,300 +71,65 @@
         <label>Quantity:
           <input type="number" name="quantity" id="quantityInput" required min="1" value="1">
         </label>
-
         <label>Total Amount to Pay:
           <input type="text" id="totalAmount" readonly>
         </label>
-
         <button type="submit" id="print-food-pass">Print Food Pass</button>
+        <div class="small">Prints instantly; data queued for syncing.</div>
       </form>
     </div>
 
     <!-- Gate Pass Card -->
-<!-- Gate Pass Card -->
-<div class="card">
-  <h2>Gate Pass</h2>
-  <form id="gatePassForm">
-    <label>Name:
-      <input type="text" id="gatePassName" required>
-    </label>
-
-    <label>Department:
-      <input type="text" id="gatePassDept" required>
-    </label>
-
-    <label>Purpose:
-      <input type="text" id="gatePassPurpose" required>
-    </label>
-
-    <button type="submit" id="print-gate-pass">Print & Save</button>
-  </form>
-</div>
-
-<script>
-  const gatePassForm = document.getElementById('gatePassForm');
-  const printGatePassBtn = document.getElementById('print-gate-pass');
-
-  // Format time like 12:23 PM
-  const formatDateTime = () => {
-    const now = new Date();
-    return now.toLocaleTimeString('en-IN', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
-  };
-
-
-  gatePassForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    printGatePassBtn.disabled = true;
-
-    const name = document.getElementById('gatePassName').value.trim();
-    const dept = document.getElementById('gatePassDept').value.trim();
-    const purpose = document.getElementById('gatePassPurpose').value.trim();
-    const outTime = formatDateTime();
-
-    if (!name || !dept || !purpose) {
-      alert("Please fill all required fields.");
-      printGatePassBtn.disabled = false;
-      return;
-    }
-
-    const gateData = {
-      name,
-      dept,
-      purpose,
-      outTime
-    };
-
-    // Send data to Apps Script and handle success
-    google.script.run.withSuccessHandler(function (res) {
-      if (res.success) {
-        const gatePassId = String(res.id).padStart(4, '0');
-
-        const printHtml = `
-<pre style="font-family: monospace; font-size: 14px; font-weight: bold; white-space: pre-wrap; word-wrap: break-word;">
-Shree Swaminarayan Gurukul
-----------------------------
-        🚪 GATE PASS        
-----------------------------
-ID   : ${gatePassId}
-Date : ${new Date().toLocaleDateString('en-IN')}
-Name :  ${name}
-Department : ${dept}
-Purpose : ${purpose}
-
-Time Out : ${outTime}
-Time In : _____________________
-Singnature : __________________
-
-</pre>`;
-
-        // Open print window
-        const win = window.open('', '', 'width=800,height=600');
-        win.document.write(`
-          <html>
-          <head><title>Gate Pass</title></head>
-          <body onload="window.onafterprint = () => window.close(); window.print();">
-            ${printHtml}
-          </body>
-          </html>
-        `);
-        win.document.close();
-
-        gatePassForm.reset();
-        printGatePassBtn.disabled = false;
-      } else {
-        alert("Error saving gate pass.");
-        printGatePassBtn.disabled = false;
-      }
-    }).addGatePass(gateData);
-  });
-</script>
-
-
-
+    <div class="card">
+      <h2>Gate Pass</h2>
+      <form id="gatePassForm">
+        <label>Name: <input type="text" id="gatePassName" required></label>
+        <label>Department: <input type="text" id="gatePassDept" required></label>
+        <label>Purpose: <input type="text" id="gatePassPurpose" required></label>
+        <button type="submit" id="print-gate-pass">Print & Save</button>
+        <div class="small">Time-out auto-filled; time-in left blank for manual entry.</div>
+      </form>
+    </div>
 
     <!-- Donation Card -->
-<div class="card">
-  <h2>Donation Receipt</h2>
-  <form id="donationForm">
-    <div>
-      <label>Date:
-        <input type="text" id="donationDate" readonly>
-      </label>
+    <div class="card">
+      <h2>Donation Receipt</h2>
+      <form id="donationForm">
+        <div><label>Date: <input type="text" id="donationDate" readonly></label></div>
+        <div><label>Donor Name: <input type="text" id="donorName" required></label></div>
+        <div><label>Phone Number: <input type="text" id="donorPhone" minlength="10" maxlength="12" required></label></div>
+        <div><label>Ledger:
+          <select id="donationLedger" required>
+            <option value="">-- Select Ledger --</option>
+            <option value="Donation">Donation</option>
+            <option value="Hostel">Hostel</option>
+            <option value="Kitchen">Kitchen</option>
+            <option value="Shreeji Prasadam">Shreeji Prasadam</option>
+            <option value="Store Stationary">Store Stationary</option>
+            <option value="Shreeji Store">Shreeji Store</option>
+            <option value="Satsang Mandal">Satsang Mandal</option>
+            <option value="Other Income">Other Income</option>
+          </select>
+        </label></div>
+        <div><label>Note (Optional): <input type="text" id="donationNote"></label></div>
+
+        <div>
+          <label>Amount:</label><br>
+          <button type="button" class="presetAmount" data-amt="100">₹100</button>
+          <button type="button" class="presetAmount" data-amt="200">₹200</button>
+          <button type="button" class="presetAmount" data-amt="250">₹250</button>
+          <button type="button" class="presetAmount" data-amt="500">₹500</button>
+          <button type="button" class="presetAmount" data-amt="1000">₹1000</button>
+        </div>
+
+        <div><label>Custom Amount: <input type="number" id="customAmount" min="0"></label></div>
+        <div><label>Total: <input type="text" id="totalDonation" readonly value="₹0"></label></div>
+
+        <button type="submit" id="donationSubmit">Print & Save</button>
+        <button id="resetDonationForm" type="button">Reset Form</button>
+        <div class="small">Prints instantly; saved locally and synced later.</div>
+      </form>
     </div>
-
-    <div>
-      <label>Donor Name:
-        <input type="text" id="donorName" required>
-      </label>
-    </div>
-
-    <div>
-      <label>Phone Number:
-        <input type="text" id="donorPhone" minlength="10" maxlength="12" required>
-      </label>
-    </div>
-
-    <div>
-      <label>Ledger:
-        <select id="donationLedger" required>
-          <option value="">-- Select Ledger --</option>
-          <option value="Donation">Donation</option>
-          <option value="Hostel">Hostel</option>
-          <option value="Kitchen">Kitchen</option>
-          <option value="Shreeji Prasadam">Shreeji Prasadam</option>
-          <option value="Store Stationary">Store Stationary</option>
-          <option value="Shreeji Store">Shreeji Store</option>
-          <option value="Satsang Mandal">Satsang Mandal</option>
-          <option value="Other Income">Other Income</option>
-        </select>
-      </label>
-    </div>
-
-
-    
-    <div>
-      <label>Note (Optional):
-        <input type="text" id="donationNote">
-      </label>
-    </div>
-
-    <div>
-      <label>Amount:</label>
-      <button type="button" class="presetAmount" data-amt="100">₹100</button>
-      <button type="button" class="presetAmount" data-amt="200">₹200</button>
-      <button type="button" class="presetAmount" data-amt="250">₹250</button>
-      <button type="button" class="presetAmount" data-amt="500">₹500</button>
-      <button type="button" class="presetAmount" data-amt="1000">₹1000</button>
-    </div>
-
-    <div>
-      <label>Custom Amount:
-        <input type="number" id="customAmount" min="0">
-      </label>
-    </div>
-
-    <div>
-      <label>Total:
-        <input type="text" id="totalDonation" readonly value="₹0">
-      </label>
-    </div>
-
-    <button type="submit" id="donationSubmit">Print & Save</button>
-    <button id="resetDonationForm">Reset Form</button>
-    
-  </form>
-</div>
-
-<script>
-  const presetButtons = document.querySelectorAll('.presetAmount');
-  const customAmountInput = document.getElementById('customAmount');
-  const totalInput = document.getElementById('totalDonation');
-  const donationForm = document.getElementById('donationForm');
-  const resetDonationForm = document.getElementById('resetDonationForm');
-  const donorPhone = document.getElementById('donorPhone');
-
-  resetDonationForm.addEventListener('click', function(){
-    donationForm.reset();
-    document.getElementById('donationDate').value = new Date().toLocaleDateString('en-GB');
-    totalDonation = 0;
-  });
-
-  let totalDonation = 0;
-
-  const updateTotal = () => {
-    const customAmt = parseInt(customAmountInput.value) || 0;
-    totalInput.value = '₹' + (totalDonation + customAmt);
-  };
-
-  presetButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      totalDonation += parseInt(button.dataset.amt);
-      updateTotal();
-    });
-  });
-
-  customAmountInput.addEventListener('input', updateTotal);
-
-  document.getElementById('donationDate').value = new Date().toLocaleDateString('en-GB');
-
-  donationForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const name = document.getElementById('donorName').value.trim();
-    const note = document.getElementById('donationNote').value.trim();
-    const customAmt = parseInt(customAmountInput.value) || 0;
-    const total = totalDonation + customAmt;
-    const date = document.getElementById('donationDate').value;
-    const donationLedger = document.getElementById('donationLedger').value;
-
-    if (!name || total <= 0) {
-      alert("Donor name and amount are required.");
-      return;
-    }
-
-    const donationData = {
-      date,
-      name,
-      ledger: donationLedger,
-      note,
-      phone: donorPhone.value.trim(),
-      amount: total
-    };
-
-    google.script.run.withSuccessHandler(function (res) {
-      if (res.success) {
-        const htmlContent = `
-<pre style="font-family: monospace; font-size: 14px; font-weight: bold; white-space: pre-wrap; word-wrap: break-word;">
-  Shree Swaminarayan Gurukul 
-      Ahmedabad - Nikol
-      
-          <b style:"font-size: 20px">DONATION</b>        
-
- ID     : ${res.lastRow}
- Date   : ${date}
- Name   : ${name}
- Amount : ₹${total}
- Phone  : ${donorPhone.value.trim() || '-'}
- Details: ${note || '-'}
-
-✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻
- 
- Gurkul Activities:
-  ✻ Morning Evening Aarti
-  ✻ Daily Shiramani & Pooja
-  ✻ Ravi Sabha
-  ✻ Saturday Youth Sabha
-  ✻ Poonam Abhishek
-  
-🙏 🙏 Jay Swaminarayan 🙏 🙏
-</pre>`;
-        const win = window.open('', '', 'width=1200,height=800');
-        win.document.write(`
-          <html><head><title>Print</title></head>
-          <body onload="window.onafterprint = () => window.close(); window.print(); ">
-            ${htmlContent}
-          </body></html>
-        `);
-        win.document.close();
-
-        // Reset form
-        totalDonation = 0;
-        donationForm.reset();
-        updateTotal();
-        document.getElementById('donationDate').value = new Date().toLocaleDateString('en-GB');
-      } else {
-        alert("Saving failed.");
-      }
-    }).addDonation(donationData);
-  });
-
-  updateTotal();
-</script>
-
 
     <!-- Voucher List Card -->
     <div class="card" style="grid-column: span 2;">
@@ -426,36 +137,134 @@ Singnature : __________________
       <table id="voucherTable">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>Date</th>
-            <th>Type</th>
-            <th>Amount</th>
-            <th>Description</th>
-            <th>Ledger</th>
-            <th>Department</th>
-            <th>Print</th>
+            <th>ID</th><th>Date</th><th>Type</th><th>Amount</th><th>Description</th><th>Ledger</th><th>Department</th><th>Print</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
+      <div class="status" id="syncStatus">Sync status: idle</div>
     </div>
 
   </div>
 
+  <!-- Offline Sync + Form JS -->
   <script>
-    const form = document.getElementById('voucherForm');
-    const formButton = document.querySelector('form #add-voucher')
-    const tableBody = document.querySelector('#voucherTable tbody');
-    // Set today's date by default
+  /* ============================
+     Offline queue utilities (localStorage)
+     Key: gurukul_offline_queue
+     ============================ */
+  const OFFLINE_KEY = "gurukul_offline_queue";
+  const SYNC_INTERVAL_MS = 30000; // try sync every 30s when online
+
+  function getOfflineQueue() {
+    try {
+      return JSON.parse(localStorage.getItem(OFFLINE_KEY) || "[]");
+    } catch (e) {
+      console.error("Offline queue parse error", e);
+      return [];
+    }
+  }
+
+  function setOfflineQueue(queue) {
+    localStorage.setItem(OFFLINE_KEY, JSON.stringify(queue));
+    updateSyncStatus();
+  }
+
+  function saveOffline(functionName, payload) {
+    const queue = getOfflineQueue();
+    queue.push({ functionName, payload, timestamp: Date.now() });
+    setOfflineQueue(queue);
+    console.warn("Saved offline:", functionName, payload);
+    updateSyncStatus();
+  }
+
+  function updateSyncStatus() {
+    const el = document.getElementById('syncStatus');
+    const q = getOfflineQueue();
+    const online = navigator.onLine ? "online" : "offline";
+    el.textContent = `Sync status: ${online} — queued items: ${q.length}`;
+  }
+
+  // Wrap google.script.run with promise helper
+  function callServerFunction(name, payload) {
+    return new Promise((resolve, reject) => {
+      if (!window.google || !google.script || !google.script.run) {
+        return reject(new Error("google.script.run not available"));
+      }
+      // dynamic call
+      google.script.run
+        .withSuccessHandler(res => resolve(res))
+        .withFailureHandler(err => reject(err))[name](payload);
+    });
+  }
+
+  // Sync queued items sequentially
+  async function syncOfflineData() {
+    const queue = getOfflineQueue();
+    if (!queue.length) {
+      updateSyncStatus();
+      return;
+    }
+    if (!navigator.onLine) {
+      console.log("Offline — skipping sync.");
+      updateSyncStatus();
+      return;
+    }
+
+    console.log("Starting offline sync... items:", queue.length);
+    document.getElementById('syncStatus').textContent = `Sync status: syncing ${queue.length} items...`;
+
+    const remaining = [];
+
+    for (const item of queue) {
+      try {
+        // call server function and wait for result
+        const res = await callServerFunction(item.functionName, item.payload)
+          .catch(err => { throw err; });
+        // If server returns success or any result, consider it synced
+        console.log("Synced:", item.functionName, item.payload, res);
+      } catch (err) {
+        console.warn("Failed to sync item — keeping for later:", item.functionName, err);
+        remaining.push(item);
+      }
+    }
+
+    setOfflineQueue(remaining);
+    console.log("Sync finished. Remaining:", remaining.length);
+    updateSyncStatus();
+  }
+
+  // Periodic sync when online
+  setInterval(() => { if (navigator.onLine) syncOfflineData(); }, SYNC_INTERVAL_MS);
+
+  // Sync on online event
+  window.addEventListener("online", () => {
+    console.log("Browser online — triggered sync.");
+    syncOfflineData();
+  });
+
+  // initial status
+  document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('dateField').valueAsDate = new Date();
+    document.getElementById('donationDate').value = new Date().toLocaleDateString('en-GB');
+    updateSyncStatus();
+    // small delay to allow google.script.run to be available before first sync attempt
+    setTimeout(syncOfflineData, 1200);
+  });
 
+  /* ============================
+     VOUCHER FORM (instant print + offline-first)
+     ============================ */
+  const voucherForm = document.getElementById('voucherForm');
+  const voucherButton = document.getElementById('add-voucher');
+  const voucherTableBody = document.querySelector('#voucherTable tbody');
 
-    function loadVouchers() {
+  // Load vouchers from server (best-effort)
+  function loadVouchers() {
+    if (window.google && google.script && google.script.run) {
       google.script.run.withSuccessHandler(function (data) {
-        tableBody.innerHTML = '';
-        data = JSON.parse(data);
-
-        console.log(data);
+        voucherTableBody.innerHTML = '';
+        try { data = JSON.parse(data); } catch(e) {}
         if (!data || !Array.isArray(data)) return;
         data.forEach(v => {
           const row = `<tr>
@@ -468,112 +277,124 @@ Singnature : __________________
             <td>${v.Department}</td>
             <td><button onclick='printVoucher(${JSON.stringify(JSON.stringify(v))})'>🖨️</button></td>
           </tr>`;
-          tableBody.innerHTML += row;
+          voucherTableBody.innerHTML += row;
         });
-
       }).getVouchers();
+    } else {
+      console.warn("google.script.run not available to load vouchers");
     }
+  }
 
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      formButton.setAttribute('disabled', 'disabled');
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData.entries());
-
-      google.script.run.withSuccessHandler(function (response) {
-        if (response.success) {
-          form.reset();
-          loadVouchers();
-        }
-        formButton.removeAttribute('disabled');
-      }).addVoucher(data);
-    });
-
-    loadVouchers();
-  </script>
-
-  <script>
-    function printVoucher(voucherJson) {
-      const voucher = JSON.parse(voucherJson);
-      const voucherDate = new Date(voucher.Date).toLocaleDateString('en-GB'); // DD/MM/YYYY
-
-      const htmlContent = `
+  // Print template for voucher (used for immediate print)
+  function printVoucherLocal(dataObj) {
+    const voucherDate = dataObj.date || new Date().toLocaleDateString('en-GB');
+    const htmlContent = `
 <pre style="font-family: monospace; font-size: 14px; font-weight: bold; white-space: pre-wrap; word-wrap: break-word;">
 Shree Swaminarayan Gurukul
 ----------------------------
-  ${voucher.Type.toUpperCase()} VOUCHER
+  ${ (dataObj.type || 'VOUCHER').toUpperCase() }
 ----------------------------
 
-ID         : ${voucher.ID}
+ID         : ${dataObj.id || '-'}
 Date       : ${voucherDate}
-Amount     : ₹${voucher.Amount}
+Amount     : ₹${dataObj.amount}
 ----------------------------
-Ledger     : ${voucher.Ledger}
-Dept.      : ${voucher.Department}
-Desc.      : ${voucher.Description}
+Ledger     : ${dataObj.ledger || '-'}
+Dept.      : ${dataObj.department || '-'}
+Desc.      : ${dataObj.description || '-'}
 
 🙏 Jay Swaminarayan 🙏
 </pre>`;
+    const win = window.open('', '', 'width=800,height=600');
+    win.document.write(`<html><head><title>Voucher</title></head><body onload="window.print(); window.onafterprint = () => window.close();">${htmlContent}</body></html>`);
+    win.document.close();
+  }
 
-      const win = window.open('', '', 'width=1200,height=800');
-      win.document.write(`
-      <html><head><title>Print</title></head>
-      <body onload="window.onafterprint = () => window.close(); window.print();">
-        ${htmlContent}
-      </body></html>
-    `);
-      win.document.close();
-    }
-  </script>
+  // Global function used by voucher list print buttons (keeps old behavior)
+  function printVoucher(voucherJson) {
+    const voucher = JSON.parse(voucherJson);
+    printVoucherLocal({
+      id: voucher.ID,
+      date: voucher.Date,
+      amount: voucher.Amount,
+      ledger: voucher.Ledger,
+      department: voucher.Department,
+      description: voucher.Description,
+      type: voucher.Type
+    });
+  }
 
-  <script>
-    // FOOD PASS Data
-    const foodRate = 90;
+  voucherForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    voucherButton.setAttribute('disabled', 'disabled');
 
-    const quantityInput = document.getElementById('quantityInput');
-    const totalAmountInput = document.getElementById('totalAmount');
-    const foodPassForm = document.getElementById('foodPassForm');
-    const printFoodPass = document.getElementById('print-food-pass');
+    const fd = new FormData(voucherForm);
+    const data = Object.fromEntries(fd.entries());
+    // Normalize keys used by server
+    const payload = {
+      date: data.date,
+      type: data.type,
+      amount: data.amount,
+      description: data.description,
+      ledger: data.ledger,
+      personname: data.personname,
+      department: data.department
+    };
 
-    totalAmountInput.value = '₹' + foodRate;
-
-    quantityInput.addEventListener('input', () => {
-      const qty = parseInt(quantityInput.value) || 0;
-      totalAmountInput.value = '₹' + (qty * foodRate);
+    // 1) Print immediately (use local print with placeholder id)
+    printVoucherLocal({
+      id: '-',
+      date: payload.date,
+      amount: payload.amount,
+      ledger: payload.ledger,
+      department: payload.department,
+      description: payload.description,
+      type: payload.type
     });
 
-    foodPassForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      printFoodPass.setAttribute('disabled', 'disabled');
+    // 2) Always save offline-first
+    saveOffline('addVoucher', payload);
 
-      const quantity = parseInt(quantityInput.value);
-      const total = quantity * foodRate;
-      const today = new Date().toLocaleDateString('en-GB'); // DD/MM/YYYY
-      const todayTime = new Date().toLocaleTimeString('en-GB');
-      const foodPassTime = todayTime < '17:00:00' ? 'Lunch' : 'Dinner';
+    // 3) Attempt async sync in background (non-blocking)
+    syncOfflineData();
 
-      const foodPassData = {
-        quantity,
-        totalAmount: total,
-        date: `${today}`,
-        time: `${todayTime}`,
-        foodPassTime: foodPassTime
-      };
+    // 4) Reset UI immediately
+    voucherForm.reset();
+    document.getElementById('dateField').valueAsDate = new Date();
+    voucherButton.removeAttribute('disabled');
+    // update voucher list in background (best effort)
+    setTimeout(loadVouchers, 1500);
+  });
 
-      // Save to Google Sheets
-      google.script.run.withSuccessHandler(function (res) {
-        if (res.success) {
-          // Print only after saving
-          const htmlContent = `
-<pre style="font-family: monospace; font-size: 14px; font-weight: bold; white-space: pre-wrap; word-wrap: break-word;">
+  // initial load
+  loadVouchers();
+
+  /* ============================
+     FOOD PASS (instant print + offline-first)
+     ============================ */
+  const foodRate = 90;
+  const quantityInput = document.getElementById('quantityInput');
+  const totalAmountInput = document.getElementById('totalAmount');
+  const foodPassForm = document.getElementById('foodPassForm');
+  const printFoodPassBtn = document.getElementById('print-food-pass');
+
+  totalAmountInput.value = '₹' + foodRate;
+  quantityInput.addEventListener('input', () => {
+    const qty = parseInt(quantityInput.value) || 0;
+    totalAmountInput.value = '₹' + (qty * foodRate);
+  });
+
+  function printFoodPassWindow(id, date, time, passType, quantity, total) {
+    const htmlContent = `
+<pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
 Shree Swaminarayan Gurukul
 -------------------------
     🍛 FOOD PASS 🍛        
 -------------------------
 
-ID         : ${res.lastRow}
-Date       : ${today} 
-Time       : ${foodPassData.time} (${foodPassData.foodPassTime})
+ID         : ${id || '-'}
+Date       : ${date}
+Time       : ${time} (${passType})
 Quantity   : ${quantity}
 Rate       : ₹${foodRate}
 ----------------------------
@@ -581,39 +402,195 @@ Total      : ₹${total}
 
 🙏 Jay Swaminarayan 🙏
 </pre>`;
+    const win = window.open('', '', 'width=800,height=600');
+    win.document.write(`<html><head><title>Food Pass</title></head><body onload="window.print(); window.onafterprint=() => window.close();">${htmlContent}</body></html>`);
+    win.document.close();
+  }
 
-          const win = window.open('', '', 'width=1200,height=800');
-          win.document.write(`
-          <html><head><title>Print</title></head>
-          <body onload="window.onafterprint = () => window.close(); window.print();">
-            ${htmlContent}
-          </body></html>
-        `);
-          win.document.close();
+  foodPassForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    printFoodPassBtn.setAttribute('disabled', 'disabled');
 
-          foodPassForm.reset();
-          quantityInput.value = 1;
-          quantityInput.dispatchEvent(new Event('input'));
-          printFoodPass.removeAttribute('disabled');
-        } else {
-          alert('Failed to save. Please try again.');
-          printFoodPass.removeAttribute('disabled');
-        }
-      }).addFoodPass(foodPassData);
+    const quantity = parseInt(quantityInput.value);
+    const total = quantity * foodRate;
+    const today = new Date().toLocaleDateString('en-GB');
+    const time = new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true });
+    const foodPassTime = (new Date().getHours() < 17) ? 'Lunch' : 'Dinner';
 
-    });
+    const payload = { quantity, totalAmount: total, date: today, time, foodPassTime };
 
-    printFoodPass.removeAttribute('disabled');
-    // Set initial total
+    // 1) Print immediately (no wait)
+    printFoodPassWindow('-', today, time, foodPassTime, quantity, total);
+
+    // 2) Save offline-first
+    saveOffline('addFoodPass', payload);
+
+    // 3) Trigger background sync
+    syncOfflineData();
+
+    // 4) Reset form
+    foodPassForm.reset();
+    quantityInput.value = 1;
     quantityInput.dispatchEvent(new Event('input'));
+    printFoodPassBtn.removeAttribute('disabled');
+  });
+
+  /* ============================
+     GATE PASS (instant print + offline-first)
+     ============================ */
+  const gatePassFormEl = document.getElementById('gatePassForm');
+  const printGatePassBtnEl = document.getElementById('print-gate-pass');
+
+  function formatTimeShort() {
+    return new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true });
+  }
+
+  function printGatePassWindow(id, name, dept, purpose, outTime) {
+    const htmlContent = `
+<pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
+Shree Swaminarayan Gurukul
+----------------------------
+        🚪 GATE PASS        
+----------------------------
+ID   : ${id || '-'}
+Date : ${new Date().toLocaleDateString('en-IN')}
+Name : ${name}
+Department : ${dept}
+Purpose : ${purpose}
+
+Time Out : ${outTime}
+Time In  : _____________________
+Signature : __________________
+
+</pre>`;
+    const win = window.open('', '', 'width=800,height=600');
+    win.document.write(`<html><head><title>Gate Pass</title></head><body onload="window.print(); window.onafterprint = () => window.close();">${htmlContent}</body></html>`);
+    win.document.close();
+  }
+
+  gatePassFormEl.addEventListener('submit', function (e) {
+    e.preventDefault();
+    printGatePassBtnEl.disabled = true;
+
+    const name = document.getElementById('gatePassName').value.trim();
+    const dept = document.getElementById('gatePassDept').value.trim();
+    const purpose = document.getElementById('gatePassPurpose').value.trim();
+    const outTime = formatTimeShort();
+
+    const payload = { name, dept, purpose, outTime };
+
+    // 1) print immediately
+    printGatePassWindow('-', name, dept, purpose, outTime);
+
+    // 2) save offline-first
+    saveOffline('addGatePass', payload);
+
+    // 3) trigger background sync
+    syncOfflineData();
+
+    // 4) reset
+    gatePassFormEl.reset();
+    printGatePassBtnEl.disabled = false;
+  });
+
+  /* ============================
+     DONATION (instant print + offline-first)
+     ============================ */
+  const presetButtons = document.querySelectorAll('.presetAmount');
+  const customAmountInput = document.getElementById('customAmount');
+  const totalInput = document.getElementById('totalDonation');
+  const donationForm = document.getElementById('donationForm');
+  const resetDonationForm = document.getElementById('resetDonationForm');
+  const donorPhone = document.getElementById('donorPhone');
+
+  resetDonationForm.addEventListener('click', function(){
+    donationForm.reset();
+    document.getElementById('donationDate').value = new Date().toLocaleDateString('en-GB');
+    totalDonation = 0;
+    updateTotal();
+  });
+
+  let totalDonation = 0;
+  function updateTotal() {
+    const customAmt = parseInt(customAmountInput.value) || 0;
+    totalInput.value = '₹' + (totalDonation + customAmt);
+  }
+
+  presetButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      totalDonation += parseInt(button.dataset.amt);
+      updateTotal();
+    });
+  });
+
+  customAmountInput.addEventListener('input', updateTotal);
+  document.getElementById('donationDate').value = new Date().toLocaleDateString('en-GB');
+
+  function printDonationWindow(id, date, name, amount, phone, note) {
+    const htmlContent = `
+<pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
+Shree Swaminarayan Gurukul
+      Ahmedabad - Nikol
+
+        DONATION
+
+ID     : ${id || '-'}
+Date   : ${date}
+Name   : ${name}
+Amount : ₹${amount}
+Phone  : ${phone || '-'}
+Note   : ${note || '-'}
+
+🙏 Jay Swaminarayan 🙏
+</pre>`;
+    const win = window.open('', '', 'width=800,height=600');
+    win.document.write(`<html><head><title>Donation</title></head><body onload="window.print(); window.onafterprint = () => window.close();">${htmlContent}</body></html>`);
+    win.document.close();
+  }
+
+  donationForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const name = document.getElementById('donorName').value.trim();
+    const note = document.getElementById('donationNote').value.trim();
+    const customAmt = parseInt(customAmountInput.value) || 0;
+    const total = totalDonation + customAmt;
+    const date = document.getElementById('donationDate').value;
+    const donationLedger = document.getElementById('donationLedger').value;
+    const phone = donorPhone.value.trim();
+
+    if (!name || total <= 0) {
+      alert("Donor name and amount are required.");
+      return;
+    }
+
+    const payload = { date, name, ledger: donationLedger, note, phone, amount: total };
+
+    // 1) print immediately (ID unknown yet)
+    printDonationWindow('-', date, name, total, phone, note);
+
+    // 2) save offline-first
+    saveOffline('addDonation', payload);
+
+    // 3) trigger sync in background
+    syncOfflineData();
+
+    // 4) reset UI
+    totalDonation = 0;
+    donationForm.reset();
+    updateTotal();
+    document.getElementById('donationDate').value = new Date().toLocaleDateString('en-GB');
+  });
+
+  // final initial status update
+  updateSyncStatus();
   </script>
 
-<div style="text-align: center; margin-top: 15px; margin-bottom: 15px;">
-  <h3>Desiged & Developed By: Sahajanand Digital</h3>
-  <a href="http://sahajananddigital.in" target="_blank" rel="noopener noreferrer">
-    <img src="https://sahajananddigital.in/images/logo.png" alt="" style="width: 250px; height: auto;">
-  </a>
-</div>
+  <div style="text-align: center; margin-top: 15px; margin-bottom: 15px;">
+    <h3>Designed & Developed By: Sahajanand Digital</h3>
+    <a href="http://sahajananddigital.in" target="_blank" rel="noopener noreferrer">
+      <img src="https://sahajananddigital.in/images/logo.png" alt="Sahajanand Digital" style="width:250px;height:auto;">
+    </a>
+  </div>
 </body>
-
 </html>
