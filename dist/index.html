@@ -28,21 +28,20 @@
   </div>
 
   <div class="grid">
-    <!-- Voucher Card -->
     <div class="card">
       <h2>Income / Expense Voucher</h2>
       <form id="voucherForm">
         <label>Date: <input type="date" id="dateField" name="date" required></label>
         <label>Type:
-          <select name="type" required>
+          <select name="type" required id="voucherType">
             <option value="Expense">Expense</option>
             <option value="Income">Income</option>
           </select>
         </label>
-        <label>Amount: <input type="number" name="amount" required></label>
-        <label>Description: <input type="text" name="description" required></label>
+        <label>Amount: <input type="number" id="voucherAmount" name="amount" required></label>
+        <label>Description: <input type="text" id="voucherDescription" name="description" required></label>
         <label>Ledger:
-          <select name="ledger" required>
+          <select name="ledger" required id="voucherLedger">
             <option value="">-- Select Ledger --</option>
             <option value="Education">Education</option>
             <option value="Hostel">Hostel</option>
@@ -57,14 +56,13 @@
             <option value="Other">Other</option>
           </select>
         </label>
-        <label>Name: <input type="text" name="personname" required></label>
-        <label>Department: <input type="text" name="department" required></label>
+        <label>Name: <input type="text" id="voucherPerson" name="personname" required></label>
+        <label>Department: <input type="text" id="voucherDepartment" name="department" required></label>
         <button id="add-voucher" type="submit">Add Voucher</button>
         <div class="small">Prints instantly and saves locally if offline; sync happens automatically.</div>
       </form>
     </div>
 
-    <!-- Food Pass Card -->
     <div class="card">
       <h2>Food Pass</h2>
       <form id="foodPassForm">
@@ -79,7 +77,6 @@
       </form>
     </div>
 
-    <!-- Gate Pass Card -->
     <div class="card">
       <h2>Gate Pass</h2>
       <form id="gatePassForm">
@@ -91,7 +88,6 @@
       </form>
     </div>
 
-    <!-- Donation Card -->
     <div class="card">
       <h2>Donation Receipt</h2>
       <form id="donationForm">
@@ -131,7 +127,6 @@
       </form>
     </div>
 
-    <!-- Voucher List Card -->
     <div class="card" style="grid-column: span 2;">
       <h2>Voucher List</h2>
       <table id="voucherTable">
@@ -147,14 +142,23 @@
 
   </div>
 
-  <!-- Offline Sync + Form JS -->
   <script>
   /* ============================
-     Offline queue utilities (localStorage)
+     Helpers: ID generator + queue (localStorage)
      Key: gurukul_offline_queue
+     last_print_id stores last used numeric id
      ============================ */
+
   const OFFLINE_KEY = "gurukul_offline_queue";
   const SYNC_INTERVAL_MS = 30000; // try sync every 30s when online
+
+  function getNextID() {
+    // use numeric incremental ID stored locally
+    let last = Number(localStorage.getItem("last_print_id") || 0);
+    const next = last + 1;
+    localStorage.setItem("last_print_id", next);
+    return next;
+  }
 
   function getOfflineQueue() {
     try {
@@ -191,15 +195,38 @@
       if (!window.google || !google.script || !google.script.run) {
         return reject(new Error("google.script.run not available"));
       }
-      // dynamic call
       google.script.run
         .withSuccessHandler(res => resolve(res))
         .withFailureHandler(err => reject(err))[name](payload);
     });
   }
 
+  // --- NEW: Sync locking and debouncing ---
+  let isSyncing = false; // Prevents multiple syncs at once
+  let syncTimer = null; // Holds the 3-second delay timer
+
+  /**
+   * Schedules a sync to run after a delay.
+   * This "debounces" multiple fast submissions.
+   */
+  function scheduleSync(delay = 3000) { // 3-second delay
+    if (syncTimer) {
+      clearTimeout(syncTimer);
+    }
+    console.log(`Scheduling sync in ${delay}ms`);
+    syncTimer = setTimeout(() => {
+      syncOfflineData();
+      syncTimer = null; 
+    }, delay);
+  }
+
   // Sync queued items sequentially
   async function syncOfflineData() {
+    if (isSyncing) {
+      console.log("Sync already in progress. Skipping.");
+      return;
+    }
+
     const queue = getOfflineQueue();
     if (!queue.length) {
       updateSyncStatus();
@@ -211,6 +238,7 @@
       return;
     }
 
+    isSyncing = true;
     console.log("Starting offline sync... items:", queue.length);
     document.getElementById('syncStatus').textContent = `Sync status: syncing ${queue.length} items...`;
 
@@ -218,10 +246,8 @@
 
     for (const item of queue) {
       try {
-        // call server function and wait for result
         const res = await callServerFunction(item.functionName, item.payload)
           .catch(err => { throw err; });
-        // If server returns success or any result, consider it synced
         console.log("Synced:", item.functionName, item.payload, res);
       } catch (err) {
         console.warn("Failed to sync item — keeping for later:", item.functionName, err);
@@ -231,8 +257,32 @@
 
     setOfflineQueue(remaining);
     console.log("Sync finished. Remaining:", remaining.length);
+    isSyncing = false;
     updateSyncStatus();
   }
+  
+  // *** NEW COMMON PRINT FUNCTION ***
+  /**
+   * A common utility to open a new window, write HTML content, 
+   * and trigger the print dialog.
+   * @param {string} title The title for the new window.
+   * @param {string} bodyContent The HTML content to be placed inside the <body>.
+   */
+  function openPrintWindow(title, bodyContent) {
+    const win = window.open('', '', 'width=800,height=600');
+    win.document.write(`
+      <html>
+        <head>
+          <title>${title}</title>
+        </head>
+        <body onload="window.onafterprint = () => window.close();window.print();">
+          ${bodyContent}
+        </body>
+      </html>`);
+    win.document.close();
+  }
+  // **********************************
+
 
   // Periodic sync when online
   setInterval(() => { if (navigator.onLine) syncOfflineData(); }, SYNC_INTERVAL_MS);
@@ -248,12 +298,11 @@
     document.getElementById('dateField').valueAsDate = new Date();
     document.getElementById('donationDate').value = new Date().toLocaleDateString('en-GB');
     updateSyncStatus();
-    // small delay to allow google.script.run to be available before first sync attempt
-    setTimeout(syncOfflineData, 1200);
+    setTimeout(syncOfflineData, 1200); // Initial sync on load
   });
 
   /* ============================
-     VOUCHER FORM (instant print + offline-first)
+     VOUCHER FORM (instant print + offline-first + ID)
      ============================ */
   const voucherForm = document.getElementById('voucherForm');
   const voucherButton = document.getElementById('add-voucher');
@@ -286,6 +335,7 @@
   }
 
   // Print template for voucher (used for immediate print)
+  // --- REFACTORED ---
   function printVoucherLocal(dataObj) {
     const voucherDate = dataObj.date || new Date().toLocaleDateString('en-GB');
     const htmlContent = `
@@ -305,9 +355,7 @@ Desc.      : ${dataObj.description || '-'}
 
 🙏 Jay Swaminarayan 🙏
 </pre>`;
-    const win = window.open('', '', 'width=800,height=600');
-    win.document.write(`<html><head><title>Voucher</title></head><body onload="window.print(); window.onafterprint = () => window.close();">${htmlContent}</body></html>`);
-    win.document.close();
+    openPrintWindow("Voucher", htmlContent); // Use common function
   }
 
   // Global function used by voucher list print buttons (keeps old behavior)
@@ -326,24 +374,23 @@ Desc.      : ${dataObj.description || '-'}
 
   voucherForm.addEventListener('submit', function (e) {
     e.preventDefault();
-    voucherButton.setAttribute('disabled', 'disabled');
+    if (voucherButton.disabled) return; // prevent double click
+    voucherButton.disabled = true;
 
-    const fd = new FormData(voucherForm);
-    const data = Object.fromEntries(fd.entries());
-    // Normalize keys used by server
     const payload = {
-      date: data.date,
-      type: data.type,
-      amount: data.amount,
-      description: data.description,
-      ledger: data.ledger,
-      personname: data.personname,
-      department: data.department
+      id: getNextID(),
+      date: document.getElementById('dateField').value,
+      type: document.getElementById('voucherType').value,
+      amount: document.getElementById('voucherAmount').value,
+      description: document.getElementById('voucherDescription').value,
+      ledger: document.getElementById('voucherLedger').value,
+      personname: document.getElementById('voucherPerson').value,
+      department: document.getElementById('voucherDepartment').value
     };
 
-    // 1) Print immediately (use local print with placeholder id)
+    // 1) Print immediately with the same id
     printVoucherLocal({
-      id: '-',
+      id: payload.id,
       date: payload.date,
       amount: payload.amount,
       ledger: payload.ledger,
@@ -352,17 +399,16 @@ Desc.      : ${dataObj.description || '-'}
       type: payload.type
     });
 
-    // 2) Always save offline-first
+    // 2) Save offline-first (so server gets same id later)
     saveOffline('addVoucher', payload);
 
-    // 3) Attempt async sync in background (non-blocking)
-    syncOfflineData();
+    // 3) Trigger background sync (non-blocking)
+    scheduleSync(3000); 
 
-    // 4) Reset UI immediately
+    // 4) Reset UI
     voucherForm.reset();
     document.getElementById('dateField').valueAsDate = new Date();
-    voucherButton.removeAttribute('disabled');
-    // update voucher list in background (best effort)
+    voucherButton.disabled = false;
     setTimeout(loadVouchers, 1500);
   });
 
@@ -370,7 +416,7 @@ Desc.      : ${dataObj.description || '-'}
   loadVouchers();
 
   /* ============================
-     FOOD PASS (instant print + offline-first)
+     FOOD PASS (instant print + offline-first + ID)
      ============================ */
   const foodRate = 90;
   const quantityInput = document.getElementById('quantityInput');
@@ -384,9 +430,10 @@ Desc.      : ${dataObj.description || '-'}
     totalAmountInput.value = '₹' + (qty * foodRate);
   });
 
+  // --- REFACTORED ---
   function printFoodPassWindow(id, date, time, passType, quantity, total) {
     const htmlContent = `
-<pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
+<pre style="font-family: monospace; font-size: 14px; font-weight: bold; white-space: pre-wrap; word-wrap: break-word;">
 Shree Swaminarayan Gurukul
 -------------------------
     🍛 FOOD PASS 🍛        
@@ -402,14 +449,13 @@ Total      : ₹${total}
 
 🙏 Jay Swaminarayan 🙏
 </pre>`;
-    const win = window.open('', '', 'width=800,height=600');
-    win.document.write(`<html><head><title>Food Pass</title></head><body onload="window.print(); window.onafterprint=() => window.close();">${htmlContent}</body></html>`);
-    win.document.close();
+    openPrintWindow("Food Pass", htmlContent); // Use common function
   }
 
   foodPassForm.addEventListener('submit', function (e) {
     e.preventDefault();
-    printFoodPassBtn.setAttribute('disabled', 'disabled');
+    if (printFoodPassBtn.disabled) return;
+    printFoodPassBtn.disabled = true;
 
     const quantity = parseInt(quantityInput.value);
     const total = quantity * foodRate;
@@ -417,26 +463,33 @@ Total      : ₹${total}
     const time = new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true });
     const foodPassTime = (new Date().getHours() < 17) ? 'Lunch' : 'Dinner';
 
-    const payload = { quantity, totalAmount: total, date: today, time, foodPassTime };
+    const payload = {
+      id: getNextID(),
+      quantity,
+      totalAmount: total,
+      date: today,
+      time,
+      foodPassTime
+    };
 
-    // 1) Print immediately (no wait)
-    printFoodPassWindow('-', today, time, foodPassTime, quantity, total);
+    // 1) Print immediately
+    printFoodPassWindow(payload.id, today, time, foodPassTime, quantity, total);
 
     // 2) Save offline-first
     saveOffline('addFoodPass', payload);
 
     // 3) Trigger background sync
-    syncOfflineData();
+    scheduleSync(3000); 
 
     // 4) Reset form
     foodPassForm.reset();
     quantityInput.value = 1;
     quantityInput.dispatchEvent(new Event('input'));
-    printFoodPassBtn.removeAttribute('disabled');
+    printFoodPassBtn.disabled = false;
   });
 
   /* ============================
-     GATE PASS (instant print + offline-first)
+     GATE PASS (instant print + offline-first + ID)
      ============================ */
   const gatePassFormEl = document.getElementById('gatePassForm');
   const printGatePassBtnEl = document.getElementById('print-gate-pass');
@@ -445,9 +498,10 @@ Total      : ₹${total}
     return new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true });
   }
 
+  // --- REFACTORED ---
   function printGatePassWindow(id, name, dept, purpose, outTime) {
     const htmlContent = `
-<pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
+<pre style="font-family: monospace; font-size: 14px; font-weight: bold; white-space: pre-wrap; word-wrap: break-word;">
 Shree Swaminarayan Gurukul
 ----------------------------
         🚪 GATE PASS        
@@ -463,13 +517,12 @@ Time In  : _____________________
 Signature : __________________
 
 </pre>`;
-    const win = window.open('', '', 'width=800,height=600');
-    win.document.write(`<html><head><title>Gate Pass</title></head><body onload="window.print(); window.onafterprint = () => window.close();">${htmlContent}</body></html>`);
-    win.document.close();
+    openPrintWindow("Gate Pass", htmlContent); // Use common function
   }
 
   gatePassFormEl.addEventListener('submit', function (e) {
     e.preventDefault();
+    if (printGatePassBtnEl.disabled) return;
     printGatePassBtnEl.disabled = true;
 
     const name = document.getElementById('gatePassName').value.trim();
@@ -477,16 +530,22 @@ Signature : __________________
     const purpose = document.getElementById('gatePassPurpose').value.trim();
     const outTime = formatTimeShort();
 
-    const payload = { name, dept, purpose, outTime };
+    const payload = {
+      id: getNextID(),
+      name,
+      dept,
+      purpose,
+      outTime
+    };
 
     // 1) print immediately
-    printGatePassWindow('-', name, dept, purpose, outTime);
+    printGatePassWindow(payload.id, name, dept, purpose, outTime);
 
     // 2) save offline-first
     saveOffline('addGatePass', payload);
 
     // 3) trigger background sync
-    syncOfflineData();
+    scheduleSync(3000); 
 
     // 4) reset
     gatePassFormEl.reset();
@@ -494,7 +553,7 @@ Signature : __________________
   });
 
   /* ============================
-     DONATION (instant print + offline-first)
+     DONATION (instant print + offline-first + ID)
      ============================ */
   const presetButtons = document.querySelectorAll('.presetAmount');
   const customAmountInput = document.getElementById('customAmount');
@@ -506,19 +565,19 @@ Signature : __________________
   resetDonationForm.addEventListener('click', function(){
     donationForm.reset();
     document.getElementById('donationDate').value = new Date().toLocaleDateString('en-GB');
-    totalDonation = 0;
     updateTotal();
   });
 
-  let totalDonation = 0;
   function updateTotal() {
     const customAmt = parseInt(customAmountInput.value) || 0;
-    totalInput.value = '₹' + (totalDonation + customAmt);
+    totalInput.value = '₹' + customAmt;
   }
 
   presetButtons.forEach(button => {
     button.addEventListener('click', () => {
-      totalDonation += parseInt(button.dataset.amt);
+      const currentAmt = parseInt(customAmountInput.value) || 0;
+      const presetAmt = parseInt(button.dataset.amt);
+      customAmountInput.value = currentAmt + presetAmt;
       updateTotal();
     });
   });
@@ -526,9 +585,10 @@ Signature : __________________
   customAmountInput.addEventListener('input', updateTotal);
   document.getElementById('donationDate').value = new Date().toLocaleDateString('en-GB');
 
+  // --- REFACTORED ---
   function printDonationWindow(id, date, name, amount, phone, note) {
     const htmlContent = `
-<pre style="font-family: monospace; font-size: 14px; font-weight: bold;">
+<pre style="font-family: monospace; font-size: 14px; font-weight: bold; white-space: pre-wrap; word-wrap: break-word;">
 Shree Swaminarayan Gurukul
       Ahmedabad - Nikol
 
@@ -542,44 +602,64 @@ Phone  : ${phone || '-'}
 Note   : ${note || '-'}
 
 🙏 Jay Swaminarayan 🙏
+  
+  ✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻
+ 
+ Gurkul Activities:
+  ✻ Morning Evening Aarti
+  ✻ Daily Shiramani & Pooja
+  ✻ Ravi Sabha
+  ✻ Saturday Youth Sabha
+  ✻ Poonam Abhishek
+  
+🙏 🙏 Jay Swaminarayan 🙏 🙏
 </pre>`;
-    const win = window.open('', '', 'width=800,height=600');
-    win.document.write(`<html><head><title>Donation</title></head><body onload="window.print(); window.onafterprint = () => window.close();">${htmlContent}</body></html>`);
-    win.document.close();
+    openPrintWindow("Donation", htmlContent); // Use common function
   }
 
   donationForm.addEventListener('submit', function (e) {
     e.preventDefault();
+    const donateBtn = document.getElementById('donationSubmit');
+    if (donateBtn.disabled) return;
+    donateBtn.disabled = true;
 
     const name = document.getElementById('donorName').value.trim();
     const note = document.getElementById('donationNote').value.trim();
-    const customAmt = parseInt(customAmountInput.value) || 0;
-    const total = totalDonation + customAmt;
+    const total = parseInt(customAmountInput.value) || 0;
     const date = document.getElementById('donationDate').value;
     const donationLedger = document.getElementById('donationLedger').value;
     const phone = donorPhone.value.trim();
 
     if (!name || total <= 0) {
       alert("Donor name and amount are required.");
+      donateBtn.disabled = false;
       return;
     }
 
-    const payload = { date, name, ledger: donationLedger, note, phone, amount: total };
+    const payload = {
+      id: getNextID(),
+      date,
+      name,
+      ledger: donationLedger,
+      note,
+      phone,
+      amount: total 
+    };
 
-    // 1) print immediately (ID unknown yet)
-    printDonationWindow('-', date, name, total, phone, note);
+    // 1) print immediately (ID included)
+    printDonationWindow(payload.id, date, name, total, phone, note);
 
     // 2) save offline-first
     saveOffline('addDonation', payload);
 
     // 3) trigger sync in background
-    syncOfflineData();
+    scheduleSync(3000); 
 
     // 4) reset UI
-    totalDonation = 0;
     donationForm.reset();
-    updateTotal();
+    updateTotal(); 
     document.getElementById('donationDate').value = new Date().toLocaleDateString('en-GB');
+    donateBtn.disabled = false;
   });
 
   // final initial status update
