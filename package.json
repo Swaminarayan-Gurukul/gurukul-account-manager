@@ -7,11 +7,14 @@
   "homepage": "https://digitalinspiration.com/",
   "license": "MIT",
   "scripts": {
-    "dev": "vite build --config vite.config.js --mode development --watch",
-    "build": "vite build --config vite.config.js",
+    "web:dev": "vite build --config vite.client.js --mode development --watch",
+    "web:build": "vite build --config vite.client.js",
+    "gas:dev": "vite build --config vite.config.js --mode development --watch",
+    "gas:build": "vite build --config vite.config.js",
+    "build": "npm run gas:build && npm run web:build",
     "postbuild": "npx prettier --write dist/**/*.js",
-    "upload": "npx clasp push",
-    "deploy": "npm run build && npm run upload"
+    "push": "npx clasp push",
+    "deploy": "npm run build && npm run push"
   },
   "keywords": [
     "google-apps-script",

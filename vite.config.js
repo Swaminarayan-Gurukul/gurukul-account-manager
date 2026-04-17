@@ -32,7 +32,6 @@ const targets = [
     dest: '.',
     rename: (fileName) => `${fileName.toLowerCase()}.js`,
   },
-  { src: 'src/html/*.html', dest: '.' },
   { src: 'functions/**/*.js', dest: '.' },
   { src: 'appsscript.json', dest: '.' },
 ];

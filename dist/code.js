@@ -1,4 +1,4 @@
-var app = (function (f) {
+var app = (function (d) {
   "use strict";
   const $ = () => {
       try {
@@ -9,10 +9,10 @@ var app = (function (f) {
       }
       return [Session.getActiveUser().getEmail()];
     },
-    y = "%[a-f0-9]{2}",
-    S = new RegExp("(" + y + ")|([^%]+?)", "gi"),
-    F = new RegExp("(" + y + ")+", "gi");
-  function l(e, r) {
+    S = "%[a-f0-9]{2}",
+    F = new RegExp("(" + S + ")|([^%]+?)", "gi"),
+    A = new RegExp("(" + S + ")+", "gi");
+  function g(e, r) {
     try {
       return [decodeURIComponent(e.join(""))];
     } catch {}
@@ -20,36 +20,36 @@ var app = (function (f) {
     r = r || 1;
     const t = e.slice(0, r),
       n = e.slice(r);
-    return Array.prototype.concat.call([], l(t), l(n));
+    return Array.prototype.concat.call([], g(t), g(n));
   }
-  function D(e) {
+  function x(e) {
     try {
       return decodeURIComponent(e);
     } catch {
-      let r = e.match(S) || [];
+      let r = e.match(F) || [];
       for (let t = 1; t < r.length; t++)
-        (e = l(r, t).join("")), (r = e.match(S) || []);
+        (e = g(r, t).join("")), (r = e.match(F) || []);
       return e;
     }
   }
-  function U(e) {
+  function I(e) {
     const r = { "%FE%FF": "��", "%FF%FE": "��" };
-    let t = F.exec(e);
+    let t = A.exec(e);
     for (; t; ) {
       try {
         r[t[0]] = decodeURIComponent(t[0]);
       } catch {
-        const s = D(t[0]);
+        const s = x(t[0]);
         s !== t[0] && (r[t[0]] = s);
       }
-      t = F.exec(e);
+      t = A.exec(e);
     }
     r["%C2"] = "�";
     const n = Object.keys(r);
     for (const s of n) e = e.replace(new RegExp(s, "g"), r[s]);
     return e;
   }
-  function C(e) {
+  function U(e) {
     if (typeof e != "string")
       throw new TypeError(
         "Expected `encodedURI` to be of type `string`, got `" + typeof e + "`",
@@ -57,10 +57,10 @@ var app = (function (f) {
     try {
       return decodeURIComponent(e);
     } catch {
-      return U(e);
+      return I(e);
     }
   }
-  function I(e, r) {
+  function T(e, r) {
     const t = {};
     if (Array.isArray(r))
       for (const n of r) {
@@ -84,14 +84,14 @@ var app = (function (f) {
     const t = e.indexOf(r);
     return t === -1 ? [] : [e.slice(0, t), e.slice(t + r.length)];
   }
-  const T = (e) => e == null,
-    x = (e) =>
+  const C = (e) => e == null,
+    V = (e) =>
       encodeURIComponent(e).replaceAll(
         /[!'()*]/g,
         (r) => `%${r.charCodeAt(0).toString(16).toUpperCase()}`,
       ),
-    m = Symbol("encodeFragmentIdentifier");
-  function V(e) {
+    p = Symbol("encodeFragmentIdentifier");
+  function L(e) {
     switch (e.arrayFormat) {
       case "index":
         return (r) => (t, n) => {
@@ -147,7 +147,7 @@ var app = (function (f) {
               : [...t, [o(r, e), "=", o(n, e)].join("")];
     }
   }
-  function L(e) {
+  function B(e) {
     let r;
     switch (e.arrayFormat) {
       case "index":
@@ -189,24 +189,24 @@ var app = (function (f) {
             a =
               typeof n == "string" &&
               !c &&
-              d(n, e).includes(e.arrayFormatSeparator);
-          n = a ? d(n, e) : n;
+              u(n, e).includes(e.arrayFormatSeparator);
+          n = a ? u(n, e) : n;
           const i =
             c || a
-              ? n.split(e.arrayFormatSeparator).map((u) => d(u, e))
+              ? n.split(e.arrayFormatSeparator).map((f) => u(f, e))
               : n === null
                 ? n
-                : d(n, e);
+                : u(n, e);
           s[t] = i;
         };
       case "bracket-separator":
         return (t, n, s) => {
           const c = /(\[])$/.test(t);
           if (((t = t.replace(/\[]$/, "")), !c)) {
-            s[t] = n && d(n, e);
+            s[t] = n && u(n, e);
             return;
           }
-          const a = n === null ? [] : d(n, e).split(e.arrayFormatSeparator);
+          const a = n === null ? [] : u(n, e).split(e.arrayFormatSeparator);
           if (s[t] === void 0) {
             s[t] = a;
             return;
@@ -223,17 +223,17 @@ var app = (function (f) {
         };
     }
   }
-  function A(e) {
+  function N(e) {
     if (typeof e != "string" || e.length !== 1)
       throw new TypeError(
         "arrayFormatSeparator must be single character string",
       );
   }
   function o(e, r) {
-    return r.encode ? (r.strict ? x(e) : encodeURIComponent(e)) : e;
+    return r.encode ? (r.strict ? V(e) : encodeURIComponent(e)) : e;
   }
-  function d(e, r) {
-    return r.decode ? C(e) : e;
+  function u(e, r) {
+    return r.decode ? U(e) : e;
   }
   function w(e) {
     return Array.isArray(e)
@@ -244,16 +244,16 @@ var app = (function (f) {
             .map((r) => e[r])
         : e;
   }
-  function N(e) {
+  function O(e) {
     const r = e.indexOf("#");
     return r !== -1 && (e = e.slice(0, r)), e;
   }
-  function B(e) {
+  function G(e) {
     let r = "";
     const t = e.indexOf("#");
     return t !== -1 && (r = e.slice(t)), r;
   }
-  function O(e, r, t) {
+  function R(e, r, t) {
     return t === "string" && typeof e == "string"
       ? e
       : typeof t == "function" && typeof e == "string"
@@ -273,12 +273,12 @@ var app = (function (f) {
             ? Number(e)
             : e;
   }
-  function g(e) {
-    e = N(e);
+  function h(e) {
+    e = O(e);
     const r = e.indexOf("?");
     return r === -1 ? "" : e.slice(r + 1);
   }
-  function p(e, r) {
+  function y(e, r) {
     (r = {
       decode: !0,
       sort: !0,
@@ -289,8 +289,8 @@ var app = (function (f) {
       types: Object.create(null),
       ...r,
     }),
-      A(r.arrayFormatSeparator);
-    const t = L(r),
+      N(r.arrayFormatSeparator);
+    const t = B(r),
       n = Object.create(null);
     if (typeof e != "string" || ((e = e.trim().replace(/^[?#&]/, "")), !e))
       return n;
@@ -306,19 +306,19 @@ var app = (function (f) {
                   r.arrayFormat,
                 )
               ? i
-              : d(i, r)),
-        t(d(a, r), i, n);
+              : u(i, r)),
+        t(u(a, r), i, n);
     }
     for (const [s, c] of Object.entries(n))
       if (typeof c == "object" && c !== null && r.types[s] !== "string")
         for (const [a, i] of Object.entries(c)) {
-          const u = r.types[s] ? r.types[s].replace("[]", "") : void 0;
-          c[a] = O(i, r, u);
+          const f = r.types[s] ? r.types[s].replace("[]", "") : void 0;
+          c[a] = R(i, r, f);
         }
       else
         typeof c == "object" && c !== null && r.types[s] === "string"
           ? (n[s] = Object.values(c).join(r.arrayFormatSeparator))
-          : (n[s] = O(c, r, r.types[s]));
+          : (n[s] = R(c, r, r.types[s]));
     return r.sort === !1
       ? n
       : (r.sort === !0
@@ -341,10 +341,10 @@ var app = (function (f) {
       arrayFormatSeparator: ",",
       ...r,
     }),
-      A(r.arrayFormatSeparator);
+      N(r.arrayFormatSeparator);
     const t = (a) =>
-        (r.skipNull && T(e[a])) || (r.skipEmptyString && e[a] === ""),
-      n = V(r),
+        (r.skipNull && C(e[a])) || (r.skipEmptyString && e[a] === ""),
+      n = L(r),
       s = {};
     for (const [a, i] of Object.entries(e)) t(a) || (s[a] = i);
     const c = Object.keys(s);
@@ -367,76 +367,76 @@ var app = (function (f) {
         .join("&")
     );
   }
-  function R(e, r) {
+  function P(e, r) {
     r = { decode: !0, ...r };
     let [t, n] = b(e, "#");
     return (
       t === void 0 && (t = e),
       {
         url: t?.split("?")?.[0] ?? "",
-        query: p(g(e), r),
+        query: y(h(e), r),
         ...(r && r.parseFragmentIdentifier && n
-          ? { fragmentIdentifier: d(n, r) }
+          ? { fragmentIdentifier: u(n, r) }
           : {}),
       }
     );
   }
-  function E(e, r) {
-    r = { encode: !0, strict: !0, [m]: !0, ...r };
-    const t = N(e.url).split("?")[0] || "",
-      n = g(e.url),
-      s = { ...p(n, { sort: !1 }), ...e.query };
+  function D(e, r) {
+    r = { encode: !0, strict: !0, [p]: !0, ...r };
+    const t = O(e.url).split("?")[0] || "",
+      n = h(e.url),
+      s = { ...y(n, { sort: !1 }), ...e.query };
     let c = j(s, r);
     c && (c = `?${c}`);
-    let a = B(e.url);
+    let a = G(e.url);
     if (typeof e.fragmentIdentifier == "string") {
       const i = new URL(t);
       (i.hash = e.fragmentIdentifier),
-        (a = r[m] ? i.hash : `#${e.fragmentIdentifier}`);
+        (a = r[p] ? i.hash : `#${e.fragmentIdentifier}`);
     }
     return `${t}${c}${a}`;
   }
-  function P(e, r, t) {
-    t = { parseFragmentIdentifier: !0, [m]: !1, ...t };
-    const { url: n, query: s, fragmentIdentifier: c } = R(e, t);
-    return E({ url: n, query: I(s, r), fragmentIdentifier: c }, t);
+  function E(e, r, t) {
+    t = { parseFragmentIdentifier: !0, [p]: !1, ...t };
+    const { url: n, query: s, fragmentIdentifier: c } = P(e, t);
+    return D({ url: n, query: T(s, r), fragmentIdentifier: c }, t);
   }
-  function G(e, r, t) {
+  function M(e, r, t) {
     const n = Array.isArray(r) ? (s) => !r.includes(s) : (s, c) => !r(s, c);
-    return P(e, n, t);
+    return E(e, n, t);
   }
-  const M = Object.freeze(
+  const q = Object.freeze(
       Object.defineProperty(
         {
           __proto__: null,
-          exclude: G,
-          extract: g,
-          parse: p,
-          parseUrl: R,
-          pick: P,
+          exclude: M,
+          extract: h,
+          parse: y,
+          parseUrl: P,
+          pick: E,
           stringify: j,
-          stringifyUrl: E,
+          stringifyUrl: D,
         },
         Symbol.toStringTag,
         { value: "Module" },
       ),
     ),
-    q = () => {
+    H = () => {
       const e = "https://example.com",
         r = {
           name: "amit",
           location: "india",
           interests: ["workspace", "apps script"],
         },
-        t = M.stringify(r, { sort: !1, arrayFormat: "bracket" }),
+        t = q.stringify(r, { sort: !1, arrayFormat: "bracket" }),
         n = `${e}?${t}`;
       Logger.log(`URL: ${n}`);
     },
-    H = () =>
+    _ = () =>
       HtmlService.createHtmlOutputFromFile("index.html")
         .setTitle("Google Apps Script")
         .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
-  function _() {
+  function J() {
     const r = SpreadsheetApp.getActiveSpreadsheet()
         .getSheetByName("Vouchers")
         .getDataRange()
@@ -447,18 +447,18 @@ var app = (function (f) {
         .slice(-15)
         .reverse()
         .map((a, i) => {
-          const u = {};
+          const f = {};
           return (
-            t.forEach((X, h) => {
-              u[X] = a[h] !== void 0 && a[h] !== null ? a[h] : "";
+            t.forEach((l, m) => {
+              f[l] = a[m] !== void 0 && a[m] !== null ? a[m] : "";
             }),
-            (u.ID = n.length - i),
-            u
+            (f.ID = n.length - i),
+            f
           );
         });
     return JSON.stringify(c);
   }
-  function J(e) {
+  function Q(e) {
     const r = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Vouchers"),
       t = new Date().getTime();
     return (
@@ -475,7 +475,7 @@ var app = (function (f) {
       { success: !0, id: t }
     );
   }
-  function Q(e) {
+  function z(e) {
     const r = "FoodPass",
       t = SpreadsheetApp.getActiveSpreadsheet();
     let n = t.getSheetByName(r);
@@ -487,7 +487,21 @@ var app = (function (f) {
       { success: !0, lastRow: n.getLastRow() }
     );
   }
-  function z(e) {
+  function K(e) {
+    const n = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Donations");
+    if (!n) return null;
+    const s = n.getDataRange().getValues(),
+      c = s[0],
+      a = c.indexOf("Phone"),
+      i = c.indexOf("Name"),
+      f = c.indexOf("Ledger");
+    if (a === -1) return null;
+    for (let l = s.length - 1; l > 0; l--)
+      if (String(s[l][a]).includes(e))
+        return { name: s[l][i] || "", ledger: s[l][f] || "" };
+    return null;
+  }
+  function X(e) {
     const r = "Donations",
       t = SpreadsheetApp.getActiveSpreadsheet();
     let n = t.getSheetByName(r);
@@ -495,17 +509,20 @@ var app = (function (f) {
       ((n = t.insertSheet(r)), n.appendRow(["Date", "Name", "Note", "Amount"]));
     const s = PropertiesService.getScriptProperties().getProperty("username"),
       c = PropertiesService.getScriptProperties().getProperty("password"),
-      a = { Authorization: "Basic " + Utilities.base64Encode(s + ":" + c) },
-      i = {
-        message: `જય સ્વામિનારાયણ, આપ શ્રી ના તરફથી આજે ${e.date} તારીખે રૂપિયા ${e.amount} નો સહયોગ પ્રાપ્ત થયેલ છે. 
+      a = PropertiesService.getScriptProperties().getProperty("extraSmsPhone"),
+      i = { Authorization: "Basic " + Utilities.base64Encode(s + ":" + c) },
+      f = [`+91${e.phone}`];
+    a && f.push(`+91${a}`);
+    const l = {
+        message: `જય સ્વામિનારાયણ ${e.name}, આપ શ્રી ના તરફથી આજે ${e.date} તારીખે રૂપિયા ${e.amount} નો સહયોગ પ્રાપ્ત થયેલ છે. 
 શ્રી સ્વામિનારાયણ ગુરુકુળ અમદાવાદ - નિકોલ`,
-        phoneNumbers: [`+91${e.phone}`],
+        phoneNumbers: f,
       },
-      u = UrlFetchApp.fetch("https://api.sms-gate.app/3rdparty/v1/message", {
+      m = UrlFetchApp.fetch("https://api.sms-gate.app/3rdparty/v1/message", {
         method: "POST",
         contentType: "application/json",
-        headers: a,
-        payload: JSON.stringify(i),
+        headers: i,
+        payload: JSON.stringify(l),
         muteHttpExceptions: !0,
       });
     return (
@@ -516,12 +533,12 @@ var app = (function (f) {
         e.note,
         e.phone,
         e.amount,
-        u.getResponseCode(),
+        m.getResponseCode(),
       ]),
       { success: !0, lastRow: n.getLastRow() }
     );
   }
-  function K(e) {
+  function k(e) {
     const r = "GatePass",
       t = SpreadsheetApp.getActiveSpreadsheet();
     let n = t.getSheetByName(r);
@@ -533,25 +550,35 @@ var app = (function (f) {
         "Department",
         "Purpose",
         "OutTime",
+        "EstimatedInTime",
         "TimeIn",
       ]));
     const s = n.getLastRow();
     return (
-      n.appendRow([new Date(), e.name, e.dept, e.purpose, e.outTime, ""]),
+      n.appendRow([
+        new Date(),
+        e.name,
+        e.dept,
+        e.purpose,
+        e.outTime,
+        e.inTime || "",
+        "",
+      ]),
       { success: !0, id: s }
     );
   }
   return (
-    (f.addDonation = z),
-    (f.addFoodPass = Q),
-    (f.addGatePass = K),
-    (f.addVoucher = J),
-    (f.doGet = H),
-    (f.getGmailAliases = $),
-    (f.getVouchers = _),
-    (f.makeQueryString = q),
-    Object.defineProperty(f, Symbol.toStringTag, { value: "Module" }),
-    f
+    (d.addDonation = X),
+    (d.addFoodPass = z),
+    (d.addGatePass = k),
+    (d.addVoucher = Q),
+    (d.doGet = _),
+    (d.getDonorDetails = K),
+    (d.getGmailAliases = $),
+    (d.getVouchers = J),
+    (d.makeQueryString = H),
+    Object.defineProperty(d, Symbol.toStringTag, { value: "Module" }),
+    d
   );
 })({});
 
@@ -569,6 +596,9 @@ function addVoucher() {
 }
 function doGet() {
   return app.doGet.apply(this, arguments);
+}
+function getDonorDetails() {
+  return app.getDonorDetails.apply(this, arguments);
 }
 function getGmailAliases() {
   return app.getGmailAliases.apply(this, arguments);

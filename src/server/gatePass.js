@@ -5,7 +5,7 @@ export function addGatePass(data) {
     
     if (!sheet) {
         sheet = ss.insertSheet(sheetName);
-        sheet.appendRow(["Date","Name", "Department", "Purpose", "OutTime", "TimeIn"]);
+        sheet.appendRow(["Date","Name", "Department", "Purpose", "OutTime", "EstimatedInTime", "TimeIn"]);
     }
     const lastRow = sheet.getLastRow();
 
@@ -15,7 +15,8 @@ export function addGatePass(data) {
         data.dept,
         data.purpose,
         data.outTime,
-        ""                // Time In (manual later)
+        data.inTime || "", // Estimated Return Time
+        ""                // Actual Time In (manual later)
     ]);
 
     return { success: true, id: lastRow };
