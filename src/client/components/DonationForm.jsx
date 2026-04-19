@@ -7,6 +7,7 @@ const DonationForm = () => {
     name: '',
     phone: '',
     ledger: '',
+    purpose: '',
     note: '',
     customAmount: '',
   });
@@ -27,7 +28,8 @@ const DonationForm = () => {
             setFormData(prev => ({
               ...prev,
               name: details.name,
-              ledger: details.ledger || prev.ledger
+              ledger: details.ledger || prev.ledger,
+              purpose: details.purpose || prev.purpose
             }));
           }
         } catch (error) {
@@ -56,6 +58,7 @@ const DonationForm = () => {
       name: '',
       phone: '',
       ledger: '',
+      purpose: '',
       note: '',
       customAmount: '',
     });
@@ -85,6 +88,7 @@ Shree Swaminarayan Gurukul
  Name   : ${formData.name}
  Amount : ₹${total}
  Phone  : ${formData.phone || '-'}
+ Purpose: ${formData.purpose || '-'}
  Details: ${formData.note || '-'}
 
 ✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻
@@ -116,6 +120,7 @@ Shree Swaminarayan Gurukul
       date: formData.date,
       name: formData.name,
       ledger: formData.ledger,
+      purpose: formData.purpose,
       note: formData.note,
       phone: formData.phone,
       amount: total,
@@ -183,31 +188,44 @@ Shree Swaminarayan Gurukul
           />
         </div>
 
-        <div className="space-y-1">
-          <label className="text-xs font-semibold text-slate-500 uppercase">Ledger</label>
-          <select
-            name="ledger"
-            value={formData.ledger}
-            onChange={handleChange}
-            required
-            className="w-full rounded-xl border-slate-200 p-2 border text-sm bg-white"
-          >
-            <option value="">-- Select Ledger --</option>
-            <option value="Donation">Donation</option>
-            <option value="Hostel">Hostel</option>
-            <option value="Kitchen">Kitchen</option>
-            <option value="Shreeji Prasadam">Shreeji Prasadam</option>
-            <option value="Store Stationary">Store Stationary</option>
-            <option value="Shreeji Store">Shreeji Store</option>
-            <option value="Satsang Mandal">Satsang Mandal</option>
-            <option value="Other Income">Other Income</option>
-          </select>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-500 uppercase">Ledger</label>
+            <select
+              name="ledger"
+              value={formData.ledger}
+              onChange={handleChange}
+              required
+              className="w-full rounded-xl border-slate-200 p-2 border text-sm bg-white"
+            >
+              <option value="">-- Select Ledger --</option>
+              <option value="Donation">Donation</option>
+              <option value="Hostel">Hostel</option>
+              <option value="Kitchen">Kitchen</option>
+              <option value="Shreeji Prasadam">Shreeji Prasadam</option>
+              <option value="Store Stationary">Store Stationary</option>
+              <option value="Shreeji Store">Shreeji Store</option>
+              <option value="Satsang Mandal">Satsang Mandal</option>
+              <option value="Other Income">Other Income</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-slate-500 uppercase">Purpose</label>
+            <input
+              type="text"
+              name="purpose"
+              value={formData.purpose}
+              onChange={handleChange}
+              placeholder="Thal, Padharamani, etc."
+              className="w-full rounded-xl border-slate-200 p-2 border text-sm"
+            />
+          </div>
         </div>
 
         <div className="space-y-2">
           <label className="text-xs font-semibold text-slate-500 uppercase">Quick Amount</label>
           <div className="flex flex-wrap gap-2">
-            {[100, 200, 250, 500, 1000].map((amt) => (
+            {[50, 100, 200, 500, 1000].map((amt) => (
               <button
                 key={amt}
                 type="button"

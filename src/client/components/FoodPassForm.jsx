@@ -6,13 +6,16 @@ const FoodPassForm = () => {
   const [loading, setLoading] = useState(false);
   const foodRate = 90;
 
-  const totalAmount = quantity * foodRate;
+  const displayQuantity = quantity === "" ? "" : parseInt(quantity) || 0;
+  const totalAmount = (displayQuantity || 0) * foodRate;
 
-  const handleIncrement = () => setQuantity(prev => prev + 1);
-  const handleDecrement = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
+  const handleIncrement = () => setQuantity(prev => (parseInt(prev) || 0) + 1);
+  const handleDecrement = () => setQuantity(prev => Math.max(1, (parseInt(prev) || 1) - 1));
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const finalQty = Math.max(1, parseInt(quantity) || 1);
+    const finalAmount = finalQty * foodRate;
     
     const today = new Date().toLocaleDateString('en-GB');
     const todayTime = new Date().toLocaleTimeString('en-GB');
@@ -20,8 +23,8 @@ const FoodPassForm = () => {
     const tempId = Math.floor(Date.now() / 1000).toString().slice(-6);
 
     const foodPassData = {
-      quantity,
-      totalAmount,
+      quantity: finalQty,
+      totalAmount: finalAmount,
       date: today,
       time: todayTime,
       foodPassTime: foodPassTime,
@@ -40,10 +43,10 @@ Shree Swaminarayan Gurukul
 Ref ID     : ${tempId}
 Date       : ${today} 
 Time       : ${todayTime} (${foodPassTime})
-Quantity   : ${quantity}
+Quantity   : ${finalQty}
 Rate       : ₹${foodRate}
 ----------------------------
-Total      : ₹${totalAmount}
+Total      : ₹${finalAmount}
 
 🙏 Jay Swaminarayan 🙏
 </pre>
@@ -61,9 +64,6 @@ Total      : ₹${totalAmount}
     // 2. Send to GAS in the background
     setLoading(true);
     callGAS('addFoodPass', foodPassData)
-      .then((response) => {
-        if (!response.success) console.error('Failed to background save');
-      })
       .catch(console.error)
       .finally(() => {
         setLoading(false);
@@ -97,9 +97,11 @@ Total      : ₹${totalAmount}
               <input
                 type="number"
                 value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={(e) => setQuantity(e.target.value)}
+                onBlur={() => !quantity && setQuantity(1)}
                 required
                 min="1"
+                placeholder="0"
                 className="w-full rounded-xl border-slate-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 border transition-all text-center text-xl font-bold"
               />
             </div>

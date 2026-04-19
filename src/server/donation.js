@@ -10,6 +10,7 @@ export function getDonorDetails(phone) {
   const phoneIdx = headers.indexOf("Phone");
   const nameIdx = headers.indexOf("Name");
   const ledgerIdx = headers.indexOf("Ledger");
+  const noteIdx = headers.indexOf("Note");
 
   if (phoneIdx === -1) return null;
 
@@ -18,7 +19,8 @@ export function getDonorDetails(phone) {
     if (String(data[i][phoneIdx]).includes(phone)) {
       return {
         name: data[i][nameIdx] || "",
-        ledger: data[i][ledgerIdx] || ""
+        ledger: data[i][ledgerIdx] || "",
+        purpose: noteIdx !== -1 ? data[i][noteIdx] || "" : ""
       };
     }
   }
@@ -33,13 +35,13 @@ export function addDonation(data) {
 
   if (!sheet) {
     sheet = ss.insertSheet(sheetName);
-    sheet.appendRow(["Date", "Name", "Note", "Amount"]);
+    sheet.appendRow(["Date", "Name", "Ledger", "Note", "Phone", "Amount", "SMS_Status"]);
   }
 
   
   const username = PropertiesService.getScriptProperties().getProperty('username');
   const password = PropertiesService.getScriptProperties().getProperty('password');
-  const extraSmsPhone = PropertiesService.getScriptProperties().getProperty('extraSmsPhone');
+  const extraSmsPhone = PropertiesService.getScriptProperties().getProperty('extraSmsPhone') || PropertiesService.getScriptProperties().getProperty('swamiji_phone');
   
   const headers = {
       "Authorization": "Basic " + Utilities.base64Encode(username + ':' + password),
@@ -66,11 +68,12 @@ export function addDonation(data) {
       }
   );
 
+  // We save "purpose" into the "Note" column (4th position)
   sheet.appendRow([
     data.date,
     data.name,
     data.ledger,
-    data.note,
+    data.purpose || data.note || "", 
     data.phone,
     data.amount,
     response.getResponseCode()

@@ -4,10 +4,12 @@ import FoodPassForm from './components/FoodPassForm';
 import GatePassForm from './components/GatePassForm';
 import DonationForm from './components/DonationForm';
 import VoucherList from './components/VoucherList';
+import Dashboard from './components/Dashboard';
 import { syncOfflineData, getOfflineQueue } from './utils/offlineSync';
 import { callGAS } from './GAS';
 
 const App = () => {
+  const [activeTab, setActiveTab] = useState('forms'); // 'forms' or 'dashboard'
   const [voucherRefresh, setVoucherRefresh] = useState(0);
   const [offlineCount, setOfflineCount] = useState(0);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -24,7 +26,6 @@ const App = () => {
       setOfflineCount(getOfflineQueue().length);
       setSyncStatus('done');
       
-      // Reset to idle after 3 seconds
       setTimeout(() => {
         setSyncStatus('idle');
       }, 3000);
@@ -36,7 +37,6 @@ const App = () => {
     }
   };
 
-  // Sync offline data when coming back online
   useEffect(() => {
     const handleSync = () => {
       setOfflineCount(getOfflineQueue().length);
@@ -44,13 +44,10 @@ const App = () => {
     };
 
     window.addEventListener('online', handleSync);
-    
-    // Initial check on mount
     const count = getOfflineQueue().length;
     setOfflineCount(count);
     if (navigator.onLine && count > 0) performSync();
 
-    // Check periodically for offline items
     const interval = setInterval(() => {
       setOfflineCount(getOfflineQueue().length);
     }, 5000);
@@ -70,8 +67,7 @@ const App = () => {
       <div className="max-w-[1600px] mx-auto">
         
         {/* Header Section */}
-        <header className="flex flex-col md:flex-row items-center justify-between mb-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
-          {/* Progress Bar for Syncing */}
+        <header className="flex flex-col md:flex-row items-center justify-between mb-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
           {syncStatus === 'syncing' && (
             <div className="absolute top-0 left-0 h-1 bg-blue-500 w-full animate-progress-indefinite"></div>
           )}
@@ -87,90 +83,91 @@ const App = () => {
           </div>
 
           <div className="flex flex-col md:items-end gap-2">
-            {/* Sync Status Indicators */}
             <div className="flex items-center gap-3">
               {syncStatus === 'syncing' && (
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-100 animate-pulse">
-                  <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                  Syncing Data...
+                  Syncing...
                 </div>
               )}
-
               {syncStatus === 'done' && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-xs font-bold border border-green-100 animate-bounce">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-xs font-bold border border-green-100">
                   Sync Done
                 </div>
               )}
-
               {offlineCount > 0 && syncStatus !== 'syncing' && (
-                <button 
-                  onClick={performSync}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full text-xs font-bold border border-amber-100 hover:bg-amber-100 transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V4a1 1 0 10-2 0v7.586l-1.293-1.293z" /><path d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
-                  </svg>
-                  {offlineCount} Stored Offline
+                <button onClick={performSync} className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full text-xs font-bold border border-amber-100">
+                  {offlineCount} Offline
                 </button>
               )}
             </div>
-
-            <div className="text-right hidden md:block text-slate-500 text-sm">
-              <p className="font-medium">{new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              <p>Shree Swaminarayan Gurukul, Ahmedabad</p>
+            <div className="text-right hidden md:block text-slate-500 text-sm font-medium">
+              {new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </div>
           </div>
         </header>
 
-        <main className="space-y-8">
-          {/* Quick Actions Section: Food, Gate, Donation Side by Side */}
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="h-6 w-1 bg-orange-500 rounded-full"></div>
-              <h2 className="text-lg font-bold text-slate-700 uppercase tracking-wider">Passes & Donations</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex flex-col h-full bg-white rounded-2xl shadow-sm border border-slate-100">
-                <FoodPassForm />
-              </div>
-              <div className="flex flex-col h-full bg-white rounded-2xl shadow-sm border border-slate-100">
-                <GatePassForm />
-              </div>
-              <div className="flex flex-col h-full bg-white rounded-2xl shadow-sm border border-slate-100">
-                <DonationForm />
-              </div>
-            </div>
-          </section>
-          
-           {/* Top Section: Voucher Form (Full or Partial) */}
-          <section className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-             <VoucherForm onVoucherAdded={handleVoucherAdded} />
-          </section>
+        {/* Navigation Tabs */}
+        <div className="flex gap-2 mb-6 bg-white p-1.5 rounded-2xl shadow-sm border border-slate-100 w-fit">
+          <button
+            onClick={() => setActiveTab('forms')}
+            className={`px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 ${
+              activeTab === 'forms' 
+              ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' 
+              : 'text-slate-500 hover:bg-slate-50'
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Entry Forms
+          </button>
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2 ${
+              activeTab === 'dashboard' 
+              ? 'bg-blue-600 text-white shadow-lg shadow-blue-100' 
+              : 'text-slate-500 hover:bg-slate-50'
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Live Dashboard
+          </button>
+        </div>
 
-          {/* History Section: Voucher List */}
-          <section className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <VoucherList refreshTrigger={voucherRefresh} />
-          </section>
+        <main>
+          {activeTab === 'forms' ? (
+            <div className="space-y-8">
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="h-6 w-1 bg-orange-500 rounded-full"></div>
+                  <h2 className="text-lg font-bold text-slate-700 uppercase tracking-wider">Passes & Donations</h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"><FoodPassForm /></div>
+                  <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"><GatePassForm /></div>
+                  <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden"><DonationForm /></div>
+                </div>
+              </section>
+              <section className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <VoucherForm onVoucherAdded={handleVoucherAdded} />
+              </section>
+              <section className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <VoucherList refreshTrigger={voucherRefresh} />
+              </section>
+            </div>
+          ) : (
+            <section className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+              <Dashboard />
+            </section>
+          )}
         </main>
 
-        {/* Footer */}
         <footer className="mt-16 pb-8 text-center border-t border-slate-200 pt-8">
-          <p className="text-slate-500 mb-4">Designed & Developed By</p>
-          <a
-            href="http://sahajananddigital.in"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex flex-col items-center group transition-transform hover:scale-105"
-          >
-            <img 
-              src="https://sahajananddigital.in/images/logo.png" 
-              alt="Sahajanand Digital Logo" 
-              className="w-40 md:w-48 h-auto mb-2 grayscale group-hover:grayscale-0 transition-all" 
-            />
-            <span className="text-xs font-bold text-slate-400 tracking-[0.2em] uppercase">Sahajanand Digital</span>
+          <p className="text-slate-500 mb-4 font-medium italic">Designed & Developed By Sahajanand Digital</p>
+          <a href="http://sahajananddigital.in" target="_blank" rel="noopener noreferrer" className="inline-block transition-transform hover:scale-105">
+            <img src="https://sahajananddigital.in/images/logo.png" alt="Logo" className="w-40 h-auto grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all" />
           </a>
         </footer>
       </div>

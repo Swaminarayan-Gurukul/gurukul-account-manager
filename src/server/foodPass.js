@@ -5,7 +5,7 @@ export function addFoodPass(data) {
   
   if (!sheet) {
     sheet = ss.insertSheet(sheetName);
-    sheet.appendRow(["Date","Time", "Quantity", "TotalAmount"]);
+    sheet.appendRow(["Date","Time", "Type", "Quantity", "TotalAmount"]);
   }
 
   sheet.appendRow([
