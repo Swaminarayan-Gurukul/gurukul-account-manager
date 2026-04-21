@@ -74,7 +74,7 @@ Singnature : __________________
 
     // 2. Save in Background
     setLoading(true);
-    callGAS('addGatePass', formData)
+    callGAS('addGatePass', { ...formData, tempId, today })
       .catch(console.error)
       .finally(() => {
         setLoading(false);

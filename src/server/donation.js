@@ -14,7 +14,6 @@ export function getDonorDetails(phone) {
 
   if (phoneIdx === -1) return null;
 
-  // Search from bottom to top to get the latest details
   for (let i = data.length - 1; i > 0; i--) {
     if (String(data[i][phoneIdx]).includes(phone)) {
       return {
@@ -35,40 +34,46 @@ export function addDonation(data) {
 
   if (!sheet) {
     sheet = ss.insertSheet(sheetName);
-    sheet.appendRow(["Date", "Name", "Ledger", "Note", "Phone", "Amount", "SMS_Status"]);
+    sheet.appendRow(["Date", "Name", "Ledger", "Note", "Phone", "Amount", "SMS_Status", "TxnID"]);
   }
 
-  
   const username = PropertiesService.getScriptProperties().getProperty('username');
   const password = PropertiesService.getScriptProperties().getProperty('password');
   const extraSmsPhone = PropertiesService.getScriptProperties().getProperty('extraSmsPhone') || PropertiesService.getScriptProperties().getProperty('swamiji_phone');
   
-  const headers = {
-      "Authorization": "Basic " + Utilities.base64Encode(username + ':' + password),
-  };
+  let responseCode = "N/A";
+  if (username && password) {
+    const headers = {
+        "Authorization": "Basic " + Utilities.base64Encode(username + ':' + password),
+    };
 
-  const phoneNumbers = [`+91${data.phone}`];
-  if (extraSmsPhone) {
-    phoneNumbers.push(`+91${extraSmsPhone}`);
+    const phoneNumbers = [`+91${data.phone}`];
+    if (extraSmsPhone) {
+      phoneNumbers.push(`+91${extraSmsPhone}`);
+    }
+
+    const SMSdata = {
+        message: `જય સ્વામિનારાયણ ${data.name}, આપ શ્રી ના તરફથી આજે ${data.date} તારીખે રૂપિયા ${data.amount} નો સહયોગ પ્રાપ્ત થયેલ છે. \nશ્રી સ્વામિનારાયણ ગુરુકુળ અમદાવાદ - નિકોલ`,
+        phoneNumbers: phoneNumbers,
+    };
+
+    try {
+      const response = UrlFetchApp.fetch(
+          'https://api.sms-gate.app/3rdparty/v1/message',
+          {
+              method: 'POST',
+              contentType: 'application/json',
+              headers: headers,
+              payload: JSON.stringify(SMSdata),
+              muteHttpExceptions: true
+          }
+      );
+      responseCode = response.getResponseCode();
+    } catch (e) {
+      responseCode = "Error: " + e.message;
+    }
   }
 
-  const SMSdata = {
-      message: `જય સ્વામિનારાયણ ${data.name}, આપ શ્રી ના તરફથી આજે ${data.date} તારીખે રૂપિયા ${data.amount} નો સહયોગ પ્રાપ્ત થયેલ છે. \nશ્રી સ્વામિનારાયણ ગુરુકુળ અમદાવાદ - નિકોલ`,
-      phoneNumbers: phoneNumbers,
-  };
-
-  const response = UrlFetchApp.fetch(
-      'https://api.sms-gate.app/3rdparty/v1/message',
-      {
-          method: 'POST',
-          contentType: 'application/json',
-          headers: headers,
-          payload: JSON.stringify(SMSdata),
-          muteHttpExceptions: true
-      }
-  );
-
-  // We save "purpose" into the "Note" column (4th position)
   sheet.appendRow([
     data.date,
     data.name,
@@ -76,9 +81,9 @@ export function addDonation(data) {
     data.purpose || data.note || "", 
     data.phone,
     data.amount,
-    response.getResponseCode()
+    responseCode,
+    data.tempId || ""
   ]);
 
   return { success: true, lastRow: sheet.getLastRow() };
 }
-

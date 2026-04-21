@@ -20,9 +20,10 @@ const VoucherForm = ({ onVoucherAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const txnId = Math.floor(Date.now() / 1000).toString().slice(-6);
     setLoading(true);
     try {
-      const response = await callGAS('addVoucher', formData);
+      const response = await callGAS('addVoucher', { ...formData, txnId });
       if (response.success) {
         setFormData({
           ...formData,

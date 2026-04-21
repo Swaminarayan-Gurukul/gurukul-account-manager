@@ -6,23 +6,20 @@ import DonationForm from './components/DonationForm';
 import VoucherList from './components/VoucherList';
 import Dashboard from './components/Dashboard';
 import { syncOfflineData, getOfflineQueue } from './utils/offlineSync';
-import { callGAS } from './GAS';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('forms'); // 'forms' or 'dashboard'
   const [voucherRefresh, setVoucherRefresh] = useState(0);
   const [offlineCount, setOfflineCount] = useState(0);
-  const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState('idle'); // 'idle', 'syncing', 'done'
 
   const performSync = async () => {
-    if (getOfflineQueue().length === 0) return;
+    if (!navigator.onLine || getOfflineQueue().length === 0) return;
     
-    setIsSyncing(true);
     setSyncStatus('syncing');
     
     try {
-      await syncOfflineData(callGAS);
+      await syncOfflineData();
       setOfflineCount(getOfflineQueue().length);
       setSyncStatus('done');
       
@@ -32,8 +29,6 @@ const App = () => {
     } catch (error) {
       console.error("Sync failed:", error);
       setSyncStatus('idle');
-    } finally {
-      setIsSyncing(false);
     }
   };
 
@@ -50,13 +45,16 @@ const App = () => {
 
     const interval = setInterval(() => {
       setOfflineCount(getOfflineQueue().length);
+      if (navigator.onLine && getOfflineQueue().length > 0 && syncStatus === 'idle') {
+        performSync();
+      }
     }, 5000);
 
     return () => {
       window.removeEventListener('online', handleSync);
       clearInterval(interval);
     };
-  }, []);
+  }, [syncStatus]);
 
   const handleVoucherAdded = () => {
     setVoucherRefresh((prev) => prev + 1);
@@ -96,7 +94,7 @@ const App = () => {
               )}
               {offlineCount > 0 && syncStatus !== 'syncing' && (
                 <button onClick={performSync} className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full text-xs font-bold border border-amber-100">
-                  {offlineCount} Offline
+                  {offlineCount} Pending
                 </button>
               )}
             </div>

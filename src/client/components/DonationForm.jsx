@@ -8,7 +8,6 @@ const DonationForm = () => {
     phone: '',
     ledger: '',
     purpose: '',
-    note: '',
     customAmount: '',
   });
   const [presetTotal, setPresetTotal] = useState(0);
@@ -59,7 +58,6 @@ const DonationForm = () => {
       phone: '',
       ledger: '',
       purpose: '',
-      note: '',
       customAmount: '',
     });
     setPresetTotal(0);
@@ -89,7 +87,6 @@ Shree Swaminarayan Gurukul
  Amount : ₹${total}
  Phone  : ${formData.phone || '-'}
  Purpose: ${formData.purpose || '-'}
- Details: ${formData.note || '-'}
 
 ✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻✻
  
@@ -121,9 +118,9 @@ Shree Swaminarayan Gurukul
       name: formData.name,
       ledger: formData.ledger,
       purpose: formData.purpose,
-      note: formData.note,
       phone: formData.phone,
       amount: total,
+      tempId,
     };
 
     callGAS('addDonation', donationData)

@@ -5,7 +5,7 @@ export function addFoodPass(data) {
   
   if (!sheet) {
     sheet = ss.insertSheet(sheetName);
-    sheet.appendRow(["Date","Time", "Type", "Quantity", "TotalAmount"]);
+    sheet.appendRow(["Date", "Time", "Type", "Quantity", "TotalAmount", "TxnID"]);
   }
 
   sheet.appendRow([
@@ -13,7 +13,8 @@ export function addFoodPass(data) {
     data.time,
     data.foodPassTime,
     data.quantity,
-    data.totalAmount
+    data.totalAmount,
+    data.tempId || ""
   ]);
 
   return { success: true, lastRow: sheet.getLastRow()};

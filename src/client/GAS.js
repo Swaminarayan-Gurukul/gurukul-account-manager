@@ -1,40 +1,46 @@
 import { queueOfflineRequest } from './utils/offlineSync';
 
+const mutatingFunctions = ['addFoodPass', 'addGatePass', 'addDonation', 'addVoucher'];
+
+/**
+ * Raw execution of GAS function without queuing
+ * @param {string} functionName 
+ * @param  {...any} args 
+ * @returns {Promise<any>}
+ */
+export const execGAS = (functionName, ...args) => {
+  return new Promise((resolve, reject) => {
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler((error) => {
+          console.error(`GAS Execution Error in ${functionName}:`, error);
+          reject(error);
+        })[functionName](...args);
+    } else {
+      console.warn(`google.script.run is not available. Mocking ${functionName}`);
+      setTimeout(() => {
+        resolve({ success: true, message: 'Mocked response', mocked: true });
+      }, 500);
+    }
+  });
+};
+
 /**
  * A helper to call Google Apps Script functions
+ * Mutations (add*) are ALWAYS queued first and processed in background.
  * @param {string} functionName
  * @param {...any} args
  * @returns {Promise<any>}
  */
 export const callGAS = (functionName, ...args) => {
-  return new Promise((resolve, reject) => {
-    // Check if we are online
-    if (!navigator.onLine) {
-      console.warn(`Browser is offline. Queueing ${functionName}`);
-      queueOfflineRequest(functionName, args);
-      resolve({ success: true, offline: true, message: 'Queued for offline sync' });
-      return;
-    }
+  // Always queue mutating functions to ensure sequential processing and delay
+  if (mutatingFunctions.includes(functionName)) {
+    console.log(`Queuing transaction: ${functionName}`);
+    queueOfflineRequest(functionName, args);
+    return Promise.resolve({ success: true, offline: true, message: 'Transaction queued' });
+  }
 
-    if (typeof google !== 'undefined' && google.script && google.script.run) {
-      google.script.run
-        .withSuccessHandler(resolve)
-        .withFailureHandler((error) => {
-          console.error(`GAS Error in ${functionName}:`, error);
-          // If it's likely a network error, queue it
-          if (!navigator.onLine || error.message?.includes('network') || error.message?.includes('failed to fetch')) {
-            queueOfflineRequest(functionName, args);
-            resolve({ success: true, offline: true, message: 'Network failed. Queued for offline sync' });
-          } else {
-            reject(error);
-          }
-        })[functionName](...args);
-    } else {
-      console.warn(`google.script.run is not available. Mocking ${functionName}`);
-      // Mocking for local development
-      setTimeout(() => {
-        resolve({ success: true, message: 'Mocked response' });
-      }, 500);
-    }
-  });
+  // Read operations are executed immediately
+  return execGAS(functionName, ...args);
 };

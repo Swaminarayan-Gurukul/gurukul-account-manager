@@ -5,19 +5,19 @@ export function addGatePass(data) {
     
     if (!sheet) {
         sheet = ss.insertSheet(sheetName);
-        sheet.appendRow(["Date","Name", "Department", "Purpose", "OutTime", "EstimatedInTime", "TimeIn"]);
+        sheet.appendRow(["Date","Name", "Department", "Purpose", "OutTime", "EstimatedInTime", "TimeIn", "TxnID"]);
     }
-    const lastRow = sheet.getLastRow();
 
     sheet.appendRow([
-        new Date(),       // Date created
+        data.today || new Date(), 
         data.name,
         data.dept,
         data.purpose,
         data.outTime,
-        data.inTime || "", // Estimated Return Time
-        ""                // Actual Time In (manual later)
+        data.inTime || "", 
+        "",                
+        data.tempId || ""
     ]);
 
-    return { success: true, id: lastRow };
+    return { success: true, lastRow: sheet.getLastRow() };
 }

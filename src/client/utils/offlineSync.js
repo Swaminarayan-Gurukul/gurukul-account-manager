@@ -1,55 +1,85 @@
-const OFFLINE_QUEUE_KEY = 'gurukul_offline_queue';
+import { execGAS } from '../GAS';
 
-/**
- * Adds a request to the offline queue
- */
-export const queueOfflineRequest = (functionName, args) => {
-  const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
-  queue.push({
-    id: Date.now(),
-    functionName,
-    args,
-    timestamp: new Date().toISOString()
-  });
+const OFFLINE_QUEUE_KEY = 'gurukul_offline_queue';
+const SYNC_LOCK_KEY = 'gurukul_sync_in_progress';
+
+export const getOfflineQueue = () => {
+  try {
+    return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
+  } catch (e) {
+    return [];
+  }
+};
+
+const saveQueue = (queue) => {
   localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
 };
 
-/**
- * Gets all pending requests
- */
-export const getOfflineQueue = () => {
-  return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
+export const queueOfflineRequest = (functionName, args) => {
+  const queue = getOfflineQueue();
+  queue.push({
+    id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    functionName,
+    args,
+    timestamp: new Date().toISOString(),
+    status: 'pending' // pending, sending
+  });
+  saveQueue(queue);
 };
 
-/**
- * Removes a specific request from the queue
- */
 const removeFromQueue = (id) => {
-  const queue = getOfflineQueue();
-  const filtered = queue.filter(item => item.id !== id);
-  localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(filtered));
+  const queue = getOfflineQueue().filter(item => item.id !== id);
+  saveQueue(queue);
 };
 
-/**
- * Syncs the offline queue with Google Sheets
- */
-export const syncOfflineData = async (callGAS) => {
+export const syncOfflineData = async () => {
+  // 1. Simple cross-tab lock check
+  const lock = localStorage.getItem(SYNC_LOCK_KEY);
+  if (lock && Date.now() - parseInt(lock) < 30000) { // 30s lock safety
+    return;
+  }
+
   const queue = getOfflineQueue();
-  if (queue.length === 0) return;
+  const pendingItems = queue.filter(item => item.status === 'pending');
+  
+  if (pendingItems.length === 0) return;
 
-  console.log(`Attempting to sync ${queue.length} offline items...`);
+  // 2. Set Lock
+  localStorage.setItem(SYNC_LOCK_KEY, Date.now().toString());
 
-  for (const item of queue) {
-    try {
-      const response = await callGAS(item.functionName, ...item.args);
-      if (response.success) {
-        removeFromQueue(item.id);
-        console.log(`Synced: ${item.functionName}`);
+  try {
+    for (const item of pendingItems) {
+      if (!navigator.onLine) break;
+
+      // 3. Mark as sending in localStorage immediately (atomic update)
+      const currentQueue = getOfflineQueue();
+      const itemIdx = currentQueue.findIndex(q => q.id === item.id);
+      if (itemIdx === -1 || currentQueue[itemIdx].status === 'sending') continue;
+      
+      currentQueue[itemIdx].status = 'sending';
+      saveQueue(currentQueue);
+
+      try {
+        const response = await execGAS(item.functionName, ...item.args);
+        if (response && response.success) {
+          removeFromQueue(item.id);
+          console.log(`Synced: ${item.functionName}`);
+        } else {
+          throw new Error("Server error");
+        }
+      } catch (error) {
+        console.error(`Sync failed for ${item.id}:`, error);
+        // Reset status to pending so it can be retried later
+        const resetQueue = getOfflineQueue();
+        const resetIdx = resetQueue.findIndex(q => q.id === item.id);
+        if (resetIdx !== -1) {
+          resetQueue[resetIdx].status = 'pending';
+          saveQueue(resetQueue);
+        }
+        break; // Stop processing further items for now
       }
-    } catch (error) {
-      console.error(`Failed to sync item ${item.id}:`, error);
-      // Stop syncing if we hit a network error again
-      break;
     }
+  } finally {
+    localStorage.removeItem(SYNC_LOCK_KEY);
   }
 };
